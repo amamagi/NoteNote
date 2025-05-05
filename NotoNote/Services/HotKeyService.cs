@@ -1,4 +1,7 @@
-﻿using System.ComponentModel;
+﻿using NAudio.Utils;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 
@@ -18,7 +21,7 @@ public sealed partial class HotKeyService : IDisposable
         _source = (HwndSource)PresentationSource.FromVisual(window);
         _source.AddHook(HwndHook);
 
-        bool ok = NativeMeshods.RegisterHotKey(_source.Handle, _id, modifiers, key);
+        bool ok = NativeMethods.RegisterHotKey(_source.Handle, _id, modifiers, key);
         if (!ok) throw new Win32Exception();
     }
 
@@ -36,7 +39,7 @@ public sealed partial class HotKeyService : IDisposable
     public void Dispose()
     {
         _source.RemoveHook(HwndHook);
-        NativeMeshods.UnregisterHotKey(_source.Handle, _id);
+        NativeMethods.UnregisterHotKey(_source.Handle, _id);
 
     }
 

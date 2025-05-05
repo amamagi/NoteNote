@@ -1,0 +1,6 @@
+{
+  "OpenAI": {
+    "TranscriptionModel": "whisper-1",
+    "LanguageModel": "gpt-4o-mini"
+  }
+}

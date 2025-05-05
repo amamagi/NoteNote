@@ -2,7 +2,7 @@
 
 namespace NotoNote.Service
 {
-    internal static partial class NativeMeshods
+    internal static partial class NativeMethods
     {
 
         [DllImport("user32.dll")]

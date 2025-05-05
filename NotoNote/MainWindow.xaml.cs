@@ -11,6 +11,7 @@ namespace NotoNote;
 /// </summary>
 public partial class MainWindow : Window
 {
+    private readonly MainViewModel ViewModel;
     private HotKeyService? _hotKeyService;
 
     protected override void OnSourceInitialized(EventArgs e)
@@ -23,8 +24,10 @@ public partial class MainWindow : Window
         _hotKeyService.HotKeyPressed += (_, _) => ViewModel.ToggleRecordingCommand.Execute(null);
     }
 
-    public MainWindow()
+    public MainWindow(MainViewModel vm)
     {
         InitializeComponent();
+        DataContext = vm;
+        ViewModel = vm;
     }
 }

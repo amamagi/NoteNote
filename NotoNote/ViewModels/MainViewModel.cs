@@ -2,16 +2,17 @@
 using CommunityToolkit.Mvvm.Input;
 using NotoNote.Services;
 using System.IO;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace NotoNote.ViewModels;
-public partial class MainViewModel : ObservableObject
+public partial class MainViewModel(
+    IAudioService audioService,
+    ITranscriptionService transcriptionService,
+    ILanguageProcessingService languageProcessingService) : ObservableObject
 {
-    private readonly IAudioService _audioService;
-
-    public MainViewModel() : this(new AudioService()) { }
-    public MainViewModel(IAudioService audioService) => _audioService = audioService;
+    private readonly IAudioService _audioService = audioService;
+    private readonly ITranscriptionService _transcriptionService = transcriptionService;
+    private readonly ILanguageProcessingService _languageProcessingService = languageProcessingService;
 
     [ObservableProperty] private string _status = "Idle";
     [ObservableProperty] private string _resultText = "";
@@ -31,12 +32,10 @@ public partial class MainViewModel : ObservableObject
                     Status = "Processing...";
 
                     byte[] wav = await _audioService.StopRecordingAsync();
+                    var transcript = await _transcriptionService.TranscribeAsync(wav);
+                    var processedTranscript = await _languageProcessingService.ProcessTranscriptAsync(transcript);
 
-                    Task.Run(async () => await File.WriteAllBytesAsync("last.wav", wav));
-
-                    string transcript = await MockWhisperAsync(wav);
-
-                    ResultText = transcript;
+                    ResultText = processedTranscript;
                     Clipboard.SetText(ResultText);
                     Status = "Idle";
                     break;
@@ -46,10 +45,5 @@ public partial class MainViewModel : ObservableObject
             Status = "Error";
             MessageBox.Show(e.Message, "noto note");
         }
-    }
-
-    private static Task<string> MockWhisperAsync(byte[] _)
-    {
-        return Task.FromResult<string>("[Mock] LLM整形済みテキスト");
     }
 }
