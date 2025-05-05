@@ -1,8 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using NotoNote.Services;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using MessageBox = System.Windows.MessageBox;
 
 namespace NotoNote.ViewModels;
 public partial class MainViewModel(
@@ -20,6 +22,7 @@ public partial class MainViewModel(
     [RelayCommand]
     private async Task ToggleRecording()
     {
+
         try
         {
             switch (Status)
@@ -36,11 +39,12 @@ public partial class MainViewModel(
                     var processedTranscript = await _languageProcessingService.ProcessTranscriptAsync(transcript);
 
                     ResultText = processedTranscript;
-                    Clipboard.SetText(ResultText);
+                    await ClipBoardService.PastToCurrentCaret(ResultText);
                     Status = "Idle";
                     break;
             }
-        }catch(Exception e)
+        }
+        catch (Exception e)
         {
             Status = "Error";
             MessageBox.Show(e.Message, "noto note");

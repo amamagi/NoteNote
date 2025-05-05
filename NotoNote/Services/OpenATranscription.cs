@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
-using OpenAI;
 using OpenAI.Audio;
-using System.ClientModel;
 using System.Diagnostics;
 
 namespace NotoNote.Services;

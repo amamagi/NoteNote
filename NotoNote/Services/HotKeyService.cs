@@ -1,11 +1,8 @@
-﻿using NAudio.Utils;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
+﻿using System.ComponentModel;
 using System.Windows;
 using System.Windows.Interop;
 
-namespace NotoNote.Service;
+namespace NotoNote.Services;
 public sealed partial class HotKeyService : IDisposable
 {
     private readonly Window _window;

@@ -1,11 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
-using OpenAI;
 using OpenAI.Chat;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NotoNote.Services;
 
@@ -29,13 +23,13 @@ public sealed class OpenAiChat : ILanguageProcessingService
     public OpenAiChat(IOptions<OpenAiOptions> options)
     {
         var apiKey = options.Value.ApiKey;
-        var model= options.Value.LanguageModel;
+        var model = options.Value.LanguageModel;
         _client = new ChatClient(model, apiKey);
     }
 
     public async Task<string> ProcessTranscriptAsync(string transcript)
     {
-        var completion= await _client.CompleteChatAsync(_systemPrompt, transcript);
+        var completion = await _client.CompleteChatAsync(_systemPrompt, transcript);
         return completion.Value.Content[0].Text;
     }
 }

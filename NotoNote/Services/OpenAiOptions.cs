@@ -1,6 +1,4 @@
-﻿using System.ClientModel;
-
-namespace NotoNote.Services;
+﻿namespace NotoNote.Services;
 
 public sealed class OpenAiOptions
 {

@@ -6,9 +6,14 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+	<UseWindowsForms>True</UseWindowsForms>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UserSecretsId>7b93418a-f738-45bc-ae3c-9840eea223f4</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="icon.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
@@ -22,12 +27,15 @@
 
   <ItemGroup>
     <Folder Include="Models\" />
-    <Folder Include="Resources\" />
     <Folder Include="Tests\" />
     <Folder Include="Views\" />
   </ItemGroup>
+
   <ItemGroup>
-	<None Update="appsettings.json"
-			CopyToOutputDirectory="PreserveNewest" />
+    <Resource Include="icon.ico" />
   </ItemGroup>
+  <ItemGroup>
+	<None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
