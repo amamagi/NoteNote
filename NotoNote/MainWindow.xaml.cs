@@ -1,13 +1,8 @@
-﻿using System.Text;
+﻿using NotoNote.Service;
+using NotoNote.ViewModels;
+using System.Diagnostics;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace NotoNote;
 
@@ -16,6 +11,18 @@ namespace NotoNote;
 /// </summary>
 public partial class MainWindow : Window
 {
+    private HotKeyService? _hotKeyService;
+
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        _hotKeyService = new HotKeyService(
+            this,
+            HotKeyService.Modifiers.Ctrl | HotKeyService.Modifiers.Shift,
+            (uint)KeyInterop.VirtualKeyFromKey(Key.Space));
+        _hotKeyService.HotKeyPressed += (_, _) => ViewModel.ToggleRecordingCommand.Execute(null);
+    }
+
     public MainWindow()
     {
         InitializeComponent();
