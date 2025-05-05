@@ -28,7 +28,7 @@ public partial class App : Application
                 Debug.WriteLine(ctx.Configuration.GetSection("OpenAI"));
                 services.AddSingleton<IAudioService, AudioService>();
                 services.AddSingleton<ITranscriptionService, OpenATranscription>();
-                services.AddSingleton<ILanguageProcessingService, MockLanguageProcessor>();
+                services.AddSingleton<ILanguageProcessingService, OpenAiChat>();
 
                 services.AddSingleton<MainViewModel>();
                 services.AddSingleton<MainWindow>();
