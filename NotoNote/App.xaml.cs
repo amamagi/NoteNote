@@ -5,6 +5,7 @@ using NotoNote.Services;
 using NotoNote.ViewModels;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.Windows;
 
 namespace NotoNote;
@@ -22,18 +23,24 @@ public partial class App : Application
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices((ctx, services) =>
             {
+                services.Configure<OpenAiOptions>(
+                    ctx.Configuration.GetSection("OpenAI"));
+                Debug.WriteLine(ctx.Configuration.GetSection("OpenAI"));
                 services.AddSingleton<IAudioService, AudioService>();
-                services.AddSingleton<ITranscriptionService, MockTrranscription>();
+                services.AddSingleton<ITranscriptionService, OpenATranscription>();
                 services.AddSingleton<ILanguageProcessingService, MockLanguageProcessor>();
 
                 services.AddSingleton<MainViewModel>();
                 services.AddSingleton<MainWindow>();
+
             })
             .ConfigureLogging(b =>
             {
                 b.AddDebug();
             })
             .Build();
+        Debug.WriteLine(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT"));
+
 
         var main = _host.Services.GetRequiredService<MainWindow>();
         main.Show();

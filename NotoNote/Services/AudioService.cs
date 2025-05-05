@@ -6,7 +6,8 @@ public sealed class AudioService : IAudioService
 {
     private WaveInEvent? _waveIn;
     private WaveFileWriter? _waveFileWriter;
-    private MemoryStream? _memoryStream;
+    private const string FileName = "input.wav";
+    private static readonly string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FileName);
 
     public void StartRecording()
     {
@@ -18,31 +19,27 @@ public sealed class AudioService : IAudioService
             WaveFormat = new WaveFormat(16000, 16, 1) // whisper推奨
         };
 
-        _memoryStream = new MemoryStream();
-        _waveFileWriter = new WaveFileWriter(_memoryStream, _waveIn.WaveFormat);
+        _waveFileWriter = new WaveFileWriter(FilePath, _waveIn.WaveFormat);
 
         _waveIn.DataAvailable += (_, e) => _waveFileWriter!.Write(e.Buffer, 0, e.BytesRecorded);
         _waveIn.StartRecording();
     }
 
-    public Task<byte[]> StopRecordingAsync()
+    public Task<string> StopRecordingAsync()
     {
         if (_waveIn == null) throw new InvalidOperationException("Not recording");
 
-        var tcs = new TaskCompletionSource<byte[]>();
+        var tcs = new TaskCompletionSource<string>();
 
         _waveIn.RecordingStopped += (_, _) =>
         {
-            var bytes = _memoryStream!.ToArray();
             _waveFileWriter!.Dispose();
             _waveFileWriter = null;
-            _memoryStream!.Dispose();
-            _memoryStream = null;
 
             _waveIn?.Dispose();
             _waveIn = null;
 
-            tcs.SetResult(bytes);
+            tcs.SetResult(FilePath);
         };
 
         _waveIn.StopRecording();
@@ -52,6 +49,5 @@ public sealed class AudioService : IAudioService
     {
         _waveIn?.Dispose();
         _waveFileWriter?.Dispose();
-        _memoryStream?.Dispose();
     }
 }

@@ -31,8 +31,8 @@ public partial class MainViewModel(
                 case "Recording...":
                     Status = "Processing...";
 
-                    byte[] wav = await _audioService.StopRecordingAsync();
-                    var transcript = await _transcriptionService.TranscribeAsync(wav);
+                    var audioFilePath = await _audioService.StopRecordingAsync();
+                    var transcript = await _transcriptionService.TranscribeAsync(audioFilePath);
                     var processedTranscript = await _languageProcessingService.ProcessTranscriptAsync(transcript);
 
                     ResultText = processedTranscript;

@@ -1,5 +1,7 @@
-﻿namespace NotoNote.Services;
+﻿using System.IO;
+
+namespace NotoNote.Services;
 public interface ITranscriptionService
 {
-    Task<string> TranscribeAsync(byte[] wav);
+    Task<string> TranscribeAsync(string audioFilePath);
 }
