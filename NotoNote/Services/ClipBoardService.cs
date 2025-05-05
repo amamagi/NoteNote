@@ -1,33 +1,22 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Input;
-using System.Windows.Interop;
-using System.Windows.Media;
 using static NotoNote.Services.NativeMethods;
 using Clipboard = System.Windows.Clipboard;
-using IDataObject = System.Windows.IDataObject;
 
 namespace NotoNote.Services;
 
 public sealed class ClipBoardService
 {
+    [DllImport("user32.dll")]
+    private static extern int GetDesktopWindow();
     [DllImport("user32")] static extern bool SetForegroundWindow(IntPtr hWnd);
     public static async Task<bool> PastToCurrentCaret(string text)
     {
-        if (!IsCaretExist()) return false;
-
-        IDataObject? old = Clipboard.GetDataObject();
-
+        Debug.WriteLine("Paste");
         Clipboard.SetText(text);
-
         SendCtrlV();
-
-        await Task.Delay(200);
-
-        if (old != null) Clipboard.SetDataObject(old);
-
         return true;
 
     }
@@ -45,20 +34,40 @@ public sealed class ClipBoardService
         return false;
     }
 
-    private static void SendCtrlV()
+    private static void SendClick()
     {
         var inputs = new[]
         {
-            NewKey(Key.LeftCtrl, true),
-            NewKey(Key.V, true),
-            NewKey(Key.V, false),
-            NewKey(Key.LeftCtrl, false)
-            //NewKey(Key.LWin, true)
+            NewMouse(true),
+            NewMouse(false)
+        };
+        NativeMethods.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<INPUT>());
+    }
+
+    private static void Release()
+    {
+
+        var inputs = new[]
+        {
+            NewKey(Key.LeftCtrl, false),
+            NewKey(Key.LeftShift, false),
+            NewKey(Key.Space, false),
         };
         NativeMethods.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<NativeMethods.INPUT>());
     }
 
-    private static INPUT NewKey(Key key, bool down)
+    private static void SendCtrlV()
+    {
+        var inputs = new[] {
+            NewKey(Key.LeftCtrl, true, true),
+            NewKey(Key.V, true),
+            NewKey(Key.V, false),
+            NewKey(Key.LeftCtrl, false, true),
+        };
+        NativeMethods.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<NativeMethods.INPUT>());
+    }
+
+    private static INPUT NewKey(Key key, bool down, bool extended = false)
     {
         ushort vk = (ushort)KeyInterop.VirtualKeyFromKey(key);
         return new INPUT
@@ -69,7 +78,24 @@ public sealed class ClipBoardService
                 ki = new KEYBOARDINPUT
                 {
                     wVK = vk,
-                    dwFlags = down ? 0u : 2u // KEYEVENTF_KEYUP
+                    dwFlags = down
+                    ? (extended ? 1u : 0)
+                    : (extended ? 3u : 2u)
+                }
+            }
+        };
+    }
+
+    private static INPUT NewMouse(bool down)
+    {
+        return new INPUT
+        {
+            type = 0,
+            u = new INPUTUNION
+            {
+                mi = new MOUSEINPUT
+                {
+                    dwFlags = down ? 0x2 : 0x4
                 }
             }
         };
