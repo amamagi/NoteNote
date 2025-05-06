@@ -2,16 +2,16 @@
 
 namespace NotoNote.Services;
 
-public sealed class TranscriptionAiServiceLocator : ITranscriptionAiServiceLocator
+public sealed class TranscriptionAiServiceFactory : ITranscriptionAiServiceFactory
 {
     private readonly IApiKeyRegistry _apiKeys;
 
-    public TranscriptionAiServiceLocator(IApiKeyRegistry apiKeyRegistry) => _apiKeys = apiKeyRegistry;
+    public TranscriptionAiServiceFactory(IApiKeyRegistry apiKeyRegistry) => _apiKeys = apiKeyRegistry;
 
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public ITranscriptionAiService GetService(ITranscriptionAiModel model)
+    public ITranscriptionAiService Create(ITranscriptionAiModel model)
     {
         return model switch
         {

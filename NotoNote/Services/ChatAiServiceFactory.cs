@@ -2,12 +2,12 @@
 
 namespace NotoNote.Services;
 
-public sealed class ChatAiServiceLocator : IChatAiServiceLocator
+public sealed class ChatAiServiceFactory : IChatAiServiceFactory
 {
     private readonly IApiKeyRegistry _apiKeys;
 
-    public ChatAiServiceLocator(IApiKeyRegistry apiKeyRegistry) => _apiKeys = apiKeyRegistry;
-    public IChatAiService GetService(IChatAiModel model)
+    public ChatAiServiceFactory(IApiKeyRegistry apiKeyRegistry) => _apiKeys = apiKeyRegistry;
+    public IChatAiService Create(IChatAiModel model)
     {
         return model switch
         {
