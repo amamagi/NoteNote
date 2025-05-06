@@ -6,12 +6,26 @@
         xmlns:local="clr-namespace:NotoNote"
         mc:Ignorable="d"
         Title="Noto note" Height="280" Width="280" Topmost="True">
-    <StackPanel Margin="12">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock 
+            Text="{Binding Status}"
+            FontSize="14" 
+            Grid.Row="0"/>
+        <TextBox 
+            Text="{Binding ResultText}" 
+            Margin="0,10,0,10" 
+            AcceptsReturn="True"
+            Grid.Row="1"/>
         <ComboBox
             ItemsSource="{Binding AvailableProfiles}"
             SelectedItem="{Binding SelectedProfile}"
-            Width="200"
-
+            Width="auto"
+            Grid.Row="2"
             >
             <ComboBox.ItemTemplate>
                 <DataTemplate>
@@ -19,7 +33,5 @@
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
-        <TextBlock Text="{Binding Status}" FontSize="14" />
-        <TextBox Text="{Binding ResultText}" Margin="0,10,0,0" AcceptsReturn="True" Height="17.96"/>
-    </StackPanel>
+    </Grid>
 </Window>
