@@ -4,11 +4,11 @@ using System.Diagnostics;
 
 namespace NotoNote.Services;
 
-public sealed class OpenATranscription : ITranscriptionService
+public sealed class OpenAiTranscription : ITranscriptionService
 {
     private readonly AudioClient _client;
 
-    public OpenATranscription(IOptions<OpenAiOptions> options)
+    public OpenAiTranscription(IOptions<OpenAiOptions> options)
     {
         var model = options.Value.TranscriptionModel;
         var apiKey = options.Value.ApiKey;
