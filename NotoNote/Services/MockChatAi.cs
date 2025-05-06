@@ -1,9 +1,11 @@
-﻿namespace NotoNote.Services;
+﻿using NotoNote.Models;
+
+namespace NotoNote.Services;
 
 sealed class MockChatAi : IChatAiService
 {
-    public Task<string> CompleteChatAsync(string systemPrompt, string transcript)
+    public Task<ChatResponceText> CompleteChatAsync(SystemPrompt systemPrompt, TranscriptText transcript)
     {
-        return Task.FromResult<string>(transcript);
+        return Task.FromResult<ChatResponceText>(new(transcript.Value));
     }
 }

@@ -2,5 +2,5 @@
 public interface IAudioService : IDisposable
 {
     void StartRecording();
-    Task<string> StopRecordingAsync();
-    }
+    Task<WaveFilePath> StopRecordingAsync();
+}

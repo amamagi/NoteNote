@@ -26,11 +26,11 @@ public sealed class AudioService : IAudioService
         _waveIn.StartRecording();
     }
 
-    public Task<string> StopRecordingAsync()
+    public Task<WaveFilePath> StopRecordingAsync()
     {
         if (_waveIn == null) throw new InvalidOperationException("Not recording");
 
-        var tcs = new TaskCompletionSource<string>();
+        var tcs = new TaskCompletionSource<WaveFilePath>();
 
         _waveIn.RecordingStopped += (_, _) =>
         {
@@ -40,7 +40,7 @@ public sealed class AudioService : IAudioService
             _waveIn?.Dispose();
             _waveIn = null;
 
-            tcs.SetResult(FilePath);
+            tcs.SetResult(new(FilePath));
         };
 
         _waveIn.StopRecording();

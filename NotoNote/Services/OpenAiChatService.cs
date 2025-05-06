@@ -8,14 +8,17 @@ public sealed class OpenAiChatService : IChatAiService
 {
     private readonly ChatClient _client;
 
-    public OpenAiChatService(OpenAiChatAiModel model, ApiKey apiKey)
+    public OpenAiChatService(OpenAiApiId model, ApiKey apiKey)
     {
-        _client = new ChatClient(model.ApiId, apiKey.Value);
+        _client = new ChatClient(model.Value, apiKey.Value);
     }
 
-    public async Task<string> CompleteChatAsync(string systemPrompt, string transcript)
+    public async Task<ChatResponceText> CompleteChatAsync(SystemPrompt systemPrompt, TranscriptText transcript)
+
     {
-        var completion = await _client.CompleteChatAsync(systemPrompt, transcript);
-        return completion.Value.Content[0].Text;
+        var completion = await _client.CompleteChatAsync(systemPrompt.Value, transcript.Value);
+        var response = completion.Value.Content[0].Text;
+        return new(response);
     }
+
 }

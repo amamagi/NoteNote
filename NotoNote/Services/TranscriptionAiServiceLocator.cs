@@ -15,7 +15,7 @@ public sealed class TranscriptionAiServiceLocator : ITranscriptionAiServiceLocat
     {
         return model switch
         {
-            OpenAiTranscribeAiModel om => new OpenAiTranscriptionService(om, _apiKeys.Keys[AiProvider.OpenAI]),
+            OpenAiTranscribeAiModel om => new OpenAiTranscriptionService(om.ApiId, _apiKeys.Keys[AiProvider.OpenAI]),
             _ => throw new ArgumentOutOfRangeException(nameof(model.GetType)),
         };
     }

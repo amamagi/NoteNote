@@ -23,19 +23,15 @@ public partial class App : Application
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices((ctx, services) =>
             {
-                services.Configure<OpenAiOptions>(
-                    ctx.Configuration.GetSection("OpenAI"));
+                services.Configure<OpenAiOptions>(ctx.Configuration.GetSection("OpenAI"));
 
                 services.AddSingleton<IApiKeyRegistry, ApiKeyRegistry>();
-
+                services.AddSingleton<IProfileRegistry, ProfileRegistry>();
                 services.AddSingleton<IAudioService, AudioService>();
-
                 services.AddSingleton<ITranscriptionAiServiceLocator, TranscriptionAiServiceLocator>();
                 services.AddSingleton<IChatAiServiceLocator, ChatAiServiceLocator>();
-
                 services.AddSingleton<MainViewModel>();
                 services.AddSingleton<MainWindow>();
-
             })
             .ConfigureLogging(b =>
             {

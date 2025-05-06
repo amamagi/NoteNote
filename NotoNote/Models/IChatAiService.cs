@@ -1,5 +1,7 @@
-﻿namespace NotoNote.Services;
+﻿using NotoNote.Models;
+
+namespace NotoNote.Services;
 public interface IChatAiService
 {
-    Task<string> CompleteChatAsync(string systemPrompt, string transcript);
+    Task<ChatResponceText> CompleteChatAsync(SystemPrompt systemPrompt, TranscriptText transcript);
 }

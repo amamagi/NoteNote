@@ -3,26 +3,26 @@
 public interface ITranscriptionAiModel
 {
     public TranscriptionAiModelId Id { get; }
-    public string DisplayName { get; }
+    public AiModelName DisplayName { get; }
 }
 
 public interface IChatAiModel
 {
     public ChatAiModelId Id { get; }
-    public string DisplayName { get; }
+    public AiModelName DisplayName { get; }
 }
 public record TranscriptionAiModelId(string Value) : RecordWithValidation
 {
     protected override void Validate()
     {
-        if (string.IsNullOrEmpty(Value)) throw new ArgumentException();
+        Value.ThrowIfNullOrEmpty();
     }
 }
 public record ChatAiModelId(string Value) : RecordWithValidation
 {
     protected override void Validate()
     {
-        if (string.IsNullOrEmpty(Value)) throw new ArgumentException();
+        Value.ThrowIfNullOrEmpty();
     }
 }
 

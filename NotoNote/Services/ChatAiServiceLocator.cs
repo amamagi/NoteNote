@@ -11,7 +11,7 @@ public sealed class ChatAiServiceLocator : IChatAiServiceLocator
     {
         return model switch
         {
-            OpenAiChatAiModel om => new OpenAiChatService(om, _apiKeys.Keys[AiProvider.OpenAI]),
+            OpenAiChatAiModel om => new OpenAiChatService(om.ApiId, _apiKeys.Keys[AiProvider.OpenAI]),
             _ => throw new ArgumentOutOfRangeException(nameof(model.GetType)),
         };
     }
