@@ -27,7 +27,10 @@
 
   <ItemGroup>
     <Folder Include="Tests\" />
-    <Folder Include="Views\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Include="App.xaml" />
   </ItemGroup>
 
   <ItemGroup>
