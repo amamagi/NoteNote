@@ -8,15 +8,18 @@ namespace NotoNote.ViewModels;
 public partial class MainViewModel(
     IProfileRegistry profiles,
     IAudioService audioService,
-    ITranscriptionAiServiceLocator transcription,
-    IChatAiServiceLocator chat) : ObservableObject
+    ITranscriptionAiServiceFactory transcription,
+    IChatAiServiceFactory chat) : ObservableObject
 {
     private readonly IProfileRegistry _profiles = profiles;
     private readonly IAudioService _audioService = audioService;
-    private readonly ITranscriptionAiServiceLocator _transcription = transcription;
-    private readonly IChatAiServiceLocator _chat = chat;
+    private readonly ITranscriptionAiServiceFactory _transcription = transcription;
+    private readonly IChatAiServiceFactory _chat = chat;
+    
+    public IEnumerable<Profile> AvailableProfiles => _profiles.Profiles;
 
-    [ObservableProperty] private string _profile = "";
+    [ObservableProperty] private Profile _selectedProfile = profiles.Profiles.FirstOrDefault() ?? throw new ArgumentException();
+    [ObservableProperty] private string? _profileName;
     [ObservableProperty] private string _status = "Idle";
     [ObservableProperty] private string _resultText = "";
 
@@ -34,17 +37,17 @@ public partial class MainViewModel(
                 case "Recording...":
                     Status = "Processing...";
 
-                    var profile = _profiles.Profiles.FirstOrDefault() ?? throw new ArgumentException();
+                    var profile = SelectedProfile with { };
 
                     // 1. record
                     var audioFilePath = await _audioService.StopRecordingAsync();
 
                     // 2. transcribe
-                    var transcriptionService = _transcription.GetService(profile.TranscriptionModel);
+                    var transcriptionService = _transcription.Create(profile.TranscriptionModel);
                     var transcript = await transcriptionService.TranscribeAsync(audioFilePath);
 
                     // 4. chat
-                    var chatService = _chat.GetService(profile.ChatModel);
+                    var chatService = _chat.Create(profile.ChatModel);
                     var chatResponse = await chatService.CompleteChatAsync(profile.SystemPrompt, transcript);
 
                     // 5. paste

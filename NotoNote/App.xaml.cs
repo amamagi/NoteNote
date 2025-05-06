@@ -28,8 +28,8 @@ public partial class App : Application
                 services.AddSingleton<IApiKeyRegistry, ApiKeyRegistry>();
                 services.AddSingleton<IProfileRegistry, ProfileRegistry>();
                 services.AddSingleton<IAudioService, AudioService>();
-                services.AddSingleton<ITranscriptionAiServiceLocator, TranscriptionAiServiceLocator>();
-                services.AddSingleton<IChatAiServiceLocator, ChatAiServiceLocator>();
+                services.AddSingleton<ITranscriptionAiServiceFactory, TranscriptionAiServiceFactory>();
+                services.AddSingleton<IChatAiServiceFactory, ChatAiServiceFactory>();
                 services.AddSingleton<MainViewModel>();
                 services.AddSingleton<MainWindow>();
             })
