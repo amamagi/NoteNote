@@ -1,6 +1,4 @@
-﻿using NotoNote.Services;
-
-namespace NotoNote.Models;
+﻿namespace NotoNote.Models;
 
 public interface IChatAiServiceLocator
 {

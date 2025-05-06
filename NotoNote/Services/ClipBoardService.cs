@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Windows.Automation;
 using System.Windows.Input;
 using static NotoNote.Services.NativeMethods;
 using Clipboard = System.Windows.Clipboard;

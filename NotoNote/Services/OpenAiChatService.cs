@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using NotoNote.Models;
+﻿using NotoNote.Models;
 using OpenAI.Chat;
 
 namespace NotoNote.Services;
@@ -14,7 +13,6 @@ public sealed class OpenAiChatService : IChatAiService
     }
 
     public async Task<ChatResponceText> CompleteChatAsync(SystemPrompt systemPrompt, TranscriptText transcript)
-
     {
         var completion = await _client.CompleteChatAsync(systemPrompt.Value, transcript.Value);
         var response = completion.Value.Content[0].Text;
