@@ -10,10 +10,19 @@ public sealed class ClipBoardService
 {
     public static void Paste(string text)
     {
+        if (IsFocusedOnSelf()) return;
         Debug.WriteLine("Paste");
         Clipboard.SetText(text);
         SendCtrlV();
         return;
+    }
+
+    private static bool IsFocusedOnSelf()
+    {
+        var process = Process.GetCurrentProcess();
+        var hwnd = process.MainWindowHandle;
+        var foregroundWindow = NativeMethods.GetForegroundWindow();
+        return foregroundWindow == hwnd;
     }
 
     private static void SendCtrlV()
