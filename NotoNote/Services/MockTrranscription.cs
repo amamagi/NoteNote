@@ -1,5 +1,7 @@
-﻿namespace NotoNote.Services;
-public sealed class MockTrranscription : ITranscriptionService
+﻿using NotoNote.Models;
+
+namespace NotoNote.Services;
+public sealed class MockTrranscription : ITranscriptionAiService
 {
     public Task<string> TranscribeAsync(string audioFilePath)
     {

@@ -1,10 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NotoNote.Models;
 using NotoNote.Services;
 using NotoNote.ViewModels;
-using System.Configuration;
-using System.Data;
 using System.Diagnostics;
 using System.Windows;
 using Application = System.Windows.Application;
@@ -26,10 +25,13 @@ public partial class App : Application
             {
                 services.Configure<OpenAiOptions>(
                     ctx.Configuration.GetSection("OpenAI"));
-                Debug.WriteLine(ctx.Configuration.GetSection("OpenAI"));
+
+                services.AddSingleton<IApiKeyRegistry, ApiKeyRegistry>();
+
                 services.AddSingleton<IAudioService, AudioService>();
-                services.AddSingleton<ITranscriptionService, OpenAiTranscription>();
-                services.AddSingleton<ILanguageProcessingService, OpenAiChat>();
+
+                services.AddSingleton<ITranscriptionAiServiceLocator, TranscriptionAiServiceLocator>();
+                services.AddSingleton<IChatAiServiceLocator, ChatAiServiceLocator>();
 
                 services.AddSingleton<MainViewModel>();
                 services.AddSingleton<MainWindow>();
