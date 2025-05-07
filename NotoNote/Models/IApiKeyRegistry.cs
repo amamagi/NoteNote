@@ -14,6 +14,6 @@ public record ApiKey(string Value) : RecordWithValidation
 {
     protected override void Validate()
     {
-        if (string.IsNullOrEmpty(Value)) throw new ArgumentException();
+        if (string.IsNullOrEmpty(Value)) throw new ArgumentException("ApiKey must not be null or empty");
     }
 }

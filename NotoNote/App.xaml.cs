@@ -25,7 +25,7 @@ public partial class App : Application
             {
                 services.Configure<OpenAiOptions>(ctx.Configuration.GetSection("OpenAI"));
 
-                services.AddSingleton<IApiKeyRegistry, ApiKeyRegistry>();
+                services.AddSingleton<IApiKeyRegistry, OptionApiKeyRegistry>();
                 services.AddSingleton<IProfileRegistry, ProfileRegistry>();
                 services.AddSingleton<IAudioService, AudioService>();
                 services.AddSingleton<ITranscriptionAiServiceFactory, TranscriptionAiServiceFactory>();

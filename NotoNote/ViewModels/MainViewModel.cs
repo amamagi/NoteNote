@@ -57,10 +57,10 @@ public partial class MainViewModel(
                     break;
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
             Status = "Error";
-            MessageBox.Show(e.Message, "noto note");
+            MessageBox.Show(ex.Message, "noto note");
         }
     }
 }
