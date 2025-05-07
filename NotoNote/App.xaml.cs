@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
 using NotoNote.Models;
 using NotoNote.Services;
 using NotoNote.ViewModels;
@@ -24,13 +27,15 @@ public partial class App : Application
             .ConfigureServices((ctx, services) =>
             {
                 services.Configure<OpenAiOptions>(ctx.Configuration.GetSection("OpenAI"));
+                services.Configure<List<ProfileOptions>>(ctx.Configuration.GetSection("Profiles")); 
+
 
                 services.AddSingleton<IApiKeyRegistry, OptionApiKeyRegistry>();
                 services.AddSingleton<IProfileRegistry, ProfileRegistry>();
                 services.AddSingleton<IAudioService, AudioService>();
                 services.AddSingleton<ITranscriptionAiServiceFactory, TranscriptionAiServiceFactory>();
                 services.AddSingleton<IChatAiServiceFactory, ChatAiServiceFactory>();
-                services.AddSingleton<MainViewModel>();
+                services.AddSingleton<MainWindowViewModel>();
                 services.AddSingleton<MainWindow>();
             })
             .ConfigureLogging(b =>
@@ -39,7 +44,6 @@ public partial class App : Application
             })
             .Build();
         Debug.WriteLine(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT"));
-
 
         var main = _host.Services.GetRequiredService<MainWindow>();
         main.Show();

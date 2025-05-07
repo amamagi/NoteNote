@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using NotoNote.Models;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Interop;
 

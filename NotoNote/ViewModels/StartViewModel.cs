@@ -2,26 +2,50 @@
 using CommunityToolkit.Mvvm.Input;
 using NotoNote.Models;
 using NotoNote.Services;
+using System.Windows.Input;
 using MessageBox = System.Windows.MessageBox;
+using Application = System.Windows.Application;
 
 namespace NotoNote.ViewModels;
-public partial class MainViewModel(
-    IProfileRegistry profiles,
-    IAudioService audioService,
-    ITranscriptionAiServiceFactory transcription,
-    IChatAiServiceFactory chat) : ObservableObject
+public partial class StartViewModel : ObservableObject, IDisposable
 {
-    private readonly IProfileRegistry _profiles = profiles;
-    private readonly IAudioService _audioService = audioService;
-    private readonly ITranscriptionAiServiceFactory _transcription = transcription;
-    private readonly IChatAiServiceFactory _chat = chat;
-    
+    private HotKeyService? _hotKeyService;
+    private readonly IProfileRegistry _profiles;
+    private readonly IAudioService _audioService;
+    private readonly ITranscriptionAiServiceFactory _transcription;
+    private readonly IChatAiServiceFactory _chat;
+
     public IEnumerable<Profile> AvailableProfiles => _profiles.Profiles;
 
-    [ObservableProperty] private Profile _selectedProfile = profiles.Profiles.FirstOrDefault() ?? throw new ArgumentException();
+    [ObservableProperty] private Profile _selectedProfile;
     [ObservableProperty] private string? _profileName;
     [ObservableProperty] private string _status = "Idle";
     [ObservableProperty] private string _resultText = "";
+
+    public StartViewModel(
+        IProfileRegistry profiles,
+        IAudioService audioService,
+        ITranscriptionAiServiceFactory transcription,
+        IChatAiServiceFactory chat)
+    {
+        _profiles = profiles;
+        _audioService = audioService;
+        _transcription = transcription;
+        _chat = chat;
+
+        _selectedProfile = profiles.Profiles.FirstOrDefault() ?? throw new ArgumentException();
+
+        var window =
+            Application.Current.Windows
+            .OfType<System.Windows.Window>()
+            .SingleOrDefault(x => x.IsActive) ?? throw new ArgumentNullException();
+        _hotKeyService = new HotKeyService(
+            window,
+            HotKeyService.Modifiers.Ctrl | HotKeyService.Modifiers.Shift,
+            (uint)KeyInterop.VirtualKeyFromKey(Key.Space));
+        _hotKeyService.HotKeyPressed += (_, _) => ToggleRecordingCommand.Execute(null);
+    }
+
 
     [RelayCommand]
     private async Task ToggleRecording()
@@ -62,5 +86,10 @@ public partial class MainViewModel(
             Status = "Error";
             MessageBox.Show(ex.Message, "noto note");
         }
+    }
+
+    public void Dispose()
+    {
+        _hotKeyService?.Dispose();
     }
 }
