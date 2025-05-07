@@ -9,7 +9,7 @@ using Application = System.Windows.Application;
 namespace NotoNote.ViewModels;
 public partial class StartViewModel : ObservableObject, IDisposable
 {
-    private HotKeyService? _hotKeyService;
+    private readonly IHotKeyService _hotKeyService;
     private readonly IProfileRegistry _profiles;
     private readonly IAudioService _audioService;
     private readonly ITranscriptionAiServiceFactory _transcription;
@@ -23,11 +23,13 @@ public partial class StartViewModel : ObservableObject, IDisposable
     [ObservableProperty] private string _resultText = "";
 
     public StartViewModel(
+        IHotKeyService hotKeyService,
         IProfileRegistry profiles,
         IAudioService audioService,
         ITranscriptionAiServiceFactory transcription,
         IChatAiServiceFactory chat)
     {
+        _hotKeyService = hotKeyService;
         _profiles = profiles;
         _audioService = audioService;
         _transcription = transcription;
@@ -35,15 +37,7 @@ public partial class StartViewModel : ObservableObject, IDisposable
 
         _selectedProfile = profiles.Profiles.FirstOrDefault() ?? throw new ArgumentException();
 
-        var window =
-            Application.Current.Windows
-            .OfType<System.Windows.Window>()
-            .SingleOrDefault(x => x.IsActive) ?? throw new ArgumentNullException();
-        _hotKeyService = new HotKeyService(
-            window,
-            HotKeyService.Modifiers.Ctrl | HotKeyService.Modifiers.Shift,
-            (uint)KeyInterop.VirtualKeyFromKey(Key.Space));
-        _hotKeyService.HotKeyPressed += (_, _) => ToggleRecordingCommand.Execute(null);
+        _hotKeyService.SetCallback(() => ToggleRecordingCommand.Execute(null));
     }
 
 
@@ -90,6 +84,6 @@ public partial class StartViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
-        _hotKeyService?.Dispose();
+        _hotKeyService.Clean();
     }
 }

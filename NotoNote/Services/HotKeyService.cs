@@ -4,24 +4,13 @@ using System.Windows;
 using System.Windows.Interop;
 
 namespace NotoNote.Services;
-public sealed partial class HotKeyService : IDisposable
+public sealed class HotKeyService : IHotKeyService, IDisposable
 {
-    private readonly Window _window;
-    private readonly int _id;
-    private readonly HwndSource _source;
+    private Window _window;
+    private int _id;
+    private HwndSource _source;
 
     public event EventHandler? HotKeyPressed;
-
-    public HotKeyService(Window window, uint modifiers, uint key)
-    {
-        _window = window;
-        _id = GetHashCode();
-        _source = (HwndSource)PresentationSource.FromVisual(window);
-        _source.AddHook(HwndHook);
-
-        bool ok = NativeMethods.RegisterHotKey(_source.Handle, _id, modifiers, key);
-        if (!ok) throw new Win32Exception();
-    }
 
     private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
@@ -39,6 +28,27 @@ public sealed partial class HotKeyService : IDisposable
         _source.RemoveHook(HwndHook);
         NativeMethods.UnregisterHotKey(_source.Handle, _id);
 
+    }
+
+    public void LazyInit(Window window, uint modifiers, uint key)
+    {
+        _window = window;
+        _id = GetHashCode();
+        _source = (HwndSource)PresentationSource.FromVisual(window);
+        _source.AddHook(HwndHook);
+
+        bool ok = NativeMethods.RegisterHotKey(_source.Handle, _id, modifiers, key);
+        if (!ok) throw new Win32Exception();
+    }
+
+    public void SetCallback(Action action)
+    {
+        HotKeyPressed += (_, _) => action();
+    }
+
+    public void Clean()
+    {
+        HotKeyPressed = null;
     }
 
     public static class Modifiers

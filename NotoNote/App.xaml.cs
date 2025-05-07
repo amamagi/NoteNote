@@ -27,9 +27,9 @@ public partial class App : Application
             .ConfigureServices((ctx, services) =>
             {
                 services.Configure<OpenAiOptions>(ctx.Configuration.GetSection("OpenAI"));
-                services.Configure<List<ProfileOptions>>(ctx.Configuration.GetSection("Profiles")); 
+                services.Configure<List<ProfileOptions>>(ctx.Configuration.GetSection("Profiles"));
 
-
+                services.AddSingleton<IHotKeyService, HotKeyService>();
                 services.AddSingleton<IApiKeyRegistry, OptionApiKeyRegistry>();
                 services.AddSingleton<IProfileRegistry, ProfileRegistry>();
                 services.AddSingleton<IAudioService, AudioService>();

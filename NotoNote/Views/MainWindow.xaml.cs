@@ -1,8 +1,10 @@
-﻿using NotoNote.Services;
+﻿using NotoNote.Models;
+using NotoNote.Services;
 using NotoNote.ViewModels;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using Application = System.Windows.Application;
 
 namespace NotoNote;
@@ -13,7 +15,7 @@ namespace NotoNote;
 public partial class MainWindow : Window
 {
     private readonly MainWindowViewModel ViewModel;
-    private HotKeyService? _hotKeyService;
+    private readonly IHotKeyService _hotKeyService;
 
     private NotifyIcon notifyIcon = new();
     private readonly Dictionary<string, ToolStripMenuItem> _toolStripMenuItems = [];
@@ -21,13 +23,17 @@ public partial class MainWindow : Window
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
+        _hotKeyService.LazyInit(
+            this,
+            HotKeyService.Modifiers.Ctrl | HotKeyService.Modifiers.Shift,
+            (uint)KeyInterop.VirtualKeyFromKey(Key.Space));
     }
 
     private void SetNotifyIcon()
     {
         var items = new List<string> { "終了" };
         var toolStripMenu = new ContextMenuStrip();
-        foreach ( var item in items)
+        foreach (var item in items)
         {
             if (item != "-")
             {
@@ -48,7 +54,7 @@ public partial class MainWindow : Window
                 toolStripMenu.Items.Add(new ToolStripSeparator());
             }
         }
-        var assembly = Assembly.GetExecutingAssembly(); 
+        var assembly = Assembly.GetExecutingAssembly();
         var icon = Application.GetResourceStream(new Uri("icon.ico", UriKind.Relative)).Stream;
         notifyIcon = new NotifyIcon()
         {
@@ -65,10 +71,11 @@ public partial class MainWindow : Window
         Application.Current.Shutdown();
     }
 
-    public MainWindow(MainWindowViewModel vm)
+    public MainWindow(MainWindowViewModel vm, IHotKeyService hotKeyService)
     {
         DataContext = vm;
         ViewModel = vm;
+        _hotKeyService = hotKeyService;
         InitializeComponent();
         SetNotifyIcon();
     }
