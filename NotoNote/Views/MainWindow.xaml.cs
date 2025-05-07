@@ -4,7 +4,6 @@ using NotoNote.ViewModels;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Interop;
 using Application = System.Windows.Application;
 
 namespace NotoNote;
