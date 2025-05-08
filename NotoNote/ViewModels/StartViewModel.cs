@@ -61,11 +61,13 @@ public partial class StartViewModel : ObservableObject, IDisposable
                     var audioFilePath = await _audioService.StopRecordingAsync();
 
                     // 2. transcribe
-                    var transcriptionService = _transcription.Create(profile.TranscriptionModel);
+                    var transcriptionModel = Constants.TranscriptionAiModelMap[profile.TranscriptionModelId];
+                    var transcriptionService = _transcription.Create(transcriptionModel);
                     var transcript = await transcriptionService.TranscribeAsync(audioFilePath);
 
                     // 4. chat
-                    var chatService = _chat.Create(profile.ChatModel);
+                    var chatModel = Constants.ChatAiModelMap[profile.ChatModelId];
+                    var chatService = _chat.Create(chatModel);
                     var chatResponse = await chatService.CompleteChatAsync(profile.SystemPrompt, transcript);
 
                     // 5. paste

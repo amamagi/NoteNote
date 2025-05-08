@@ -8,7 +8,7 @@ public sealed class ProfileRegistry : IProfileRegistry
 {
     public ProfileRegistry(IOptions<List<ProfileOptions>> options)
     {
-        var profiles = options.Value.ToArray(); 
+        var profiles = options.Value.ToArray();
 
 
         if (profiles == null || profiles.Length == 0)
@@ -23,8 +23,8 @@ public sealed class ProfileRegistry : IProfileRegistry
             Profiles.Add(new Profile(
                 new ProfileName(profileName),
                 new SystemPrompt(systemPrompt),
-                Constants.AvailableTranscriptionAiModels.First(),
-                Constants.AvailableChatAiModels.First()));
+                Constants.AvailableTranscriptionAiModels.First().Id,
+                Constants.AvailableChatAiModels.First().Id));
         }
 
     }
