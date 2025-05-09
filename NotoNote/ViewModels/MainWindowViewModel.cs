@@ -7,18 +7,22 @@ namespace NotoNote.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {
+    private readonly IHotKeyService _hotKeyService;
+    private readonly IProfileRepository _profiles;
+    private readonly IAudioService _audioService;
+    private readonly ITranscriptionAiServiceFactory _transcription;
+    private readonly IChatAiServiceFactory _chat;
 
-
+    [ObservableProperty]
+    private ObservableObject _activeView = new EmptyViewModel();
 
     public MainWindowViewModel(
         IHotKeyService hotKeyService,
-    IProfileRegistry profiles,
-    IAudioService audioService,
-    ITranscriptionAiServiceFactory transcription,
-    IChatAiServiceFactory chat)
+        IProfileRepository profiles,
+        IAudioService audioService,
+        ITranscriptionAiServiceFactory transcription,
+        IChatAiServiceFactory chat)
     {
-
-
         _hotKeyService = hotKeyService;
         _profiles = profiles;
         _audioService = audioService;
@@ -27,18 +31,6 @@ public partial class MainWindowViewModel : ObservableObject
 
         TransitionViewCommand.Execute("Start");
     }
-
-    private readonly IHotKeyService _hotKeyService;
-    private readonly IProfileRegistry _profiles;
-    private readonly IAudioService _audioService;
-    private readonly ITranscriptionAiServiceFactory _transcription;
-    private readonly IChatAiServiceFactory _chat;
-
-
-
-
-    [ObservableProperty]
-    private ObservableObject _activeView = new EmptyViewModel();
 
     [RelayCommand]
     private void TransitionView(string param)

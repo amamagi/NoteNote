@@ -1,5 +1,7 @@
-﻿using NotoNote.DataStore;
+﻿using Moq;
+using NotoNote.DataStore;
 using NotoNote.Models;
+using NotoNote.Services;
 
 namespace NotoNote.Tests;
 public sealed class LiteDbProfileRepositoryTest : IDisposable
@@ -11,7 +13,9 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     {
         // Create a temporary database path
         _tempDbPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".db");
-        _repository = new LiteDbProfileRepository(_tempDbPath);
+        var presets = new Mock<IPresetProfileProvider>();
+        presets.Setup(x => x.Get()).Returns([]);
+        _repository = new LiteDbProfileRepository(presets.Object, _tempDbPath);
     }
 
     public void Dispose()

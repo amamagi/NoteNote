@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NotoNote.DataStore;
 using NotoNote.Models;
 using NotoNote.Services;
 using NotoNote.ViewModels;
@@ -24,11 +25,12 @@ public partial class App : Application
             .ConfigureServices((ctx, services) =>
             {
                 services.Configure<OpenAiOptions>(ctx.Configuration.GetSection("OpenAI"));
-                services.Configure<List<ProfileOptions>>(ctx.Configuration.GetSection("Profiles"));
+                services.Configure<List<PresetProfileOptions>>(ctx.Configuration.GetSection("PresetProfiles"));
 
+                services.AddSingleton<IPresetProfileProvider, PresetProfileProvider>();
+                services.AddSingleton<IProfileRepository, LiteDbProfileRepository>();
                 services.AddSingleton<IHotKeyService, HotKeyService>();
                 services.AddSingleton<IApiKeyRegistry, OptionApiKeyRegistry>();
-                services.AddSingleton<IProfileRegistry, ProfileRegistry>();
                 services.AddSingleton<IAudioService, AudioService>();
                 services.AddSingleton<ITranscriptionAiServiceFactory, TranscriptionAiServiceFactory>();
                 services.AddSingleton<IChatAiServiceFactory, ChatAiServiceFactory>();

@@ -10,12 +10,12 @@ namespace NotoNote.ViewModels;
 public partial class StartViewModel : ObservableObject, IDisposable
 {
     private readonly IHotKeyService _hotKeyService;
-    private readonly IProfileRegistry _profiles;
+    private readonly IProfileRepository _profiles;
     private readonly IAudioService _audioService;
     private readonly ITranscriptionAiServiceFactory _transcription;
     private readonly IChatAiServiceFactory _chat;
 
-    public IEnumerable<Profile> AvailableProfiles => _profiles.Profiles;
+    public IEnumerable<Profile> AvailableProfiles => _profiles.GetAll();
 
     [ObservableProperty] private Profile _selectedProfile;
     [ObservableProperty] private string? _profileName;
@@ -24,7 +24,7 @@ public partial class StartViewModel : ObservableObject, IDisposable
 
     public StartViewModel(
         IHotKeyService hotKeyService,
-        IProfileRegistry profiles,
+        IProfileRepository profiles,
         IAudioService audioService,
         ITranscriptionAiServiceFactory transcription,
         IChatAiServiceFactory chat)
@@ -35,7 +35,7 @@ public partial class StartViewModel : ObservableObject, IDisposable
         _transcription = transcription;
         _chat = chat;
 
-        _selectedProfile = profiles.Profiles.FirstOrDefault() ?? throw new ArgumentException();
+        _selectedProfile = profiles.GetAll().FirstOrDefault() ?? throw new ArgumentException();
 
         _hotKeyService.SetCallback(() => ToggleRecordingCommand.Execute(null));
     }

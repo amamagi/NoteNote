@@ -8,8 +8,8 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private IEnumerable<Profile> _profiles;
 
-    public SettingsViewModel(IProfileRegistry profiles)
+    public SettingsViewModel(IProfileRepository profiles)
     {
-        Profiles = profiles.Profiles;
+        Profiles = profiles.GetAll();
     }
 }
