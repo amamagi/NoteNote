@@ -7,20 +7,22 @@ namespace NotoNote.Tests;
 public sealed class LiteDbProfileRepositoryTest : IDisposable
 {
     private readonly string _tempDbPath;
-    private readonly LiteDbProfileRepository _repository;
+    private readonly ProfileRepository _repository;
+    private readonly ILiteDbContext _context;
 
     public LiteDbProfileRepositoryTest()
     {
         // Create a temporary database path
         _tempDbPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".db");
+        _context = new LiteDbContext(_tempDbPath);
         var presets = new Mock<IPresetProfileProvider>();
         presets.Setup(x => x.Get()).Returns([]);
-        _repository = new LiteDbProfileRepository(presets.Object, _tempDbPath);
+        _repository = new ProfileRepository(presets.Object, _context);
     }
 
     public void Dispose()
     {
-        _repository?.Dispose();
+        _context?.Dispose();
         // Clean up the temporary database file
         if (File.Exists(_tempDbPath))
         {

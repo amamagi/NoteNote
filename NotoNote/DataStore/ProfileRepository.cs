@@ -1,32 +1,14 @@
 ﻿using LiteDB;
 using NotoNote.Models;
 using NotoNote.Services;
-using System.IO;
 
 namespace NotoNote.DataStore;
-public sealed class LiteDbProfileRepository : IProfileRepository, IDisposable
+public sealed class ProfileRepository : IProfileRepository
 {
-    private static readonly string DefaultPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "NotoNote",
-        "data.db");
 
-    private readonly LiteDatabase _db;
-
-    public LiteDbProfileRepository(IPresetProfileProvider presetProfileProvider) : this(presetProfileProvider, DefaultPath) { }
-
-    public LiteDbProfileRepository(IPresetProfileProvider presetProfileProvider, string dbPath)
+    public ProfileRepository(IPresetProfileProvider presetProfileProvider, ILiteDbContext dbContext)
     {
-        // Ensure the directory exists
-        var directory = Path.GetDirectoryName(dbPath);
-        if (directory != null && !Directory.Exists(directory))
-        {
-            Directory.CreateDirectory(directory);
-        }
-        _db = new LiteDatabase(dbPath);
-
-        // Create the collection if it doesn't exist
-        _collection = _db.GetCollection<ProfileDto>("profiles");
+        _collection = dbContext.Profiles;
 
         // Ensure indexes
         _collection.EnsureIndex(x => x.Id);
@@ -64,10 +46,5 @@ public sealed class LiteDbProfileRepository : IProfileRepository, IDisposable
     public void Delete(ProfileId id)
     {
         _collection.Delete(id.Value);
-    }
-
-    public void Dispose()
-    {
-        _db?.Dispose();
     }
 }

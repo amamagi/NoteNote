@@ -27,8 +27,9 @@ public partial class App : Application
                 services.Configure<OpenAiOptions>(ctx.Configuration.GetSection("OpenAI"));
                 services.Configure<List<PresetProfileOptions>>(ctx.Configuration.GetSection("PresetProfiles"));
 
+                services.AddSingleton<ILiteDbContext, LiteDbContext>();
                 services.AddSingleton<IPresetProfileProvider, PresetProfileProvider>();
-                services.AddSingleton<IProfileRepository, LiteDbProfileRepository>();
+                services.AddSingleton<IProfileRepository, ProfileRepository>();
                 services.AddSingleton<IHotKeyService, HotKeyService>();
                 services.AddSingleton<IApiKeyRegistry, OptionApiKeyRegistry>();
                 services.AddSingleton<IAudioService, AudioService>();
