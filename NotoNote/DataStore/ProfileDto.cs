@@ -8,6 +8,7 @@ public sealed class ProfileDto
     public string SystemPrompt { get; set; } = string.Empty;
     public string TranscriptionAiModelId { get; set; } = string.Empty;
     public string ChatModelId { get; set; } = string.Empty;
+    public int Order { get; set; } = 0;
 }
 
 public static class ProfileExtensions
@@ -21,7 +22,7 @@ public static class ProfileExtensions
             new TranscriptionAiModelId(dto.TranscriptionAiModelId),
             new ChatAiModelId(dto.ChatModelId));
     }
-    public static ProfileDto ToDto(this Profile model)
+    public static ProfileDto ToDto(this Profile model, int order = int.MaxValue)
     {
         return new ProfileDto
         {
@@ -29,7 +30,8 @@ public static class ProfileExtensions
             Name = model.Name.Value,
             SystemPrompt = model.SystemPrompt.Value,
             TranscriptionAiModelId = model.TranscriptionModelId.Value,
-            ChatModelId = model.ChatModelId.Value
+            ChatModelId = model.ChatModelId.Value,
+            Order = order
         };
     }
 }

@@ -5,7 +5,6 @@ using NotoNote.Services;
 namespace NotoNote.DataStore;
 public sealed class ProfileRepository : IProfileRepository
 {
-
     public ProfileRepository(IPresetProfileProvider presetProfileProvider, ILiteDbContext dbContext)
     {
         _collection = dbContext.Profiles;
@@ -16,9 +15,10 @@ public sealed class ProfileRepository : IProfileRepository
         // Seed if empty
         if (_collection.Count() == 0)
         {
+            var counter = 0;
             foreach (var profile in presetProfileProvider.Get())
             {
-                _collection.Insert(profile.ToDto());
+                _collection.Insert(profile.ToDto(counter++));
             }
         }
     }
@@ -26,7 +26,7 @@ public sealed class ProfileRepository : IProfileRepository
     private readonly ILiteCollection<ProfileDto> _collection;
     public void Add(Profile profile)
     {
-        _collection.Insert(profile.ToDto());
+        _collection.Insert(profile.ToDto(_collection.Count()));
     }
     public Profile? Get(ProfileId id)
     {
@@ -36,7 +36,9 @@ public sealed class ProfileRepository : IProfileRepository
 
     public IEnumerable<Profile> GetAll()
     {
-        return _collection.FindAll().Select(x => x.ToModel());
+        return _collection.FindAll()
+            .OrderBy(x => x.Order)
+            .Select(x => x.ToModel());
     }
 
     public void Update(Profile profile)
