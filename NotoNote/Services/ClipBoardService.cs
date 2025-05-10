@@ -1,18 +1,30 @@
-﻿using System.Diagnostics;
+﻿using NotoNote.Models;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
+using System.Windows.Threading;
 using static NotoNote.Services.NativeMethods;
 using Clipboard = System.Windows.Clipboard;
 
 namespace NotoNote.Services;
 
-public sealed class ClipBoardService
+public sealed class ClipBoardService : IClipBoardService
 {
-    public static void Paste(string text)
+    private readonly Dispatcher _uiDispatcher;
+
+    public ClipBoardService(Dispatcher uiDispatcher)
+    {
+        _uiDispatcher = uiDispatcher;
+    }
+
+    public void Paste(string text)
     {
         if (IsFocusedOnSelf()) return;
         Debug.WriteLine("Paste");
-        Clipboard.SetText(text);
+        _uiDispatcher.Invoke(() =>
+        {
+            Clipboard.SetText(text);
+        });
         SendCtrlV();
         return;
     }

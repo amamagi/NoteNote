@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using NotoNote.Models;
 using Stateless;
+using System.IO;
 
 namespace NotoNote.ViewModels;
 public partial class MainScreenViewModel : ObservableObject
@@ -28,12 +29,13 @@ public partial class MainScreenViewModel : ObservableObject
     private readonly Hotkey ActivationHotkey = new(Keys.K, Keys.Shift | Keys.Control);
     private readonly Hotkey CancelHotkey = new(Keys.Escape, Keys.None);
 
+    private readonly IClipBoardService _clipboard;
     private readonly IWindowService _window;
     private readonly IHotkeyService _hotKey;
     private readonly IProfileRepository _profiles;
     private readonly IAudioService _audio;
-    private readonly ITranscriptionAiServiceFactory _transcription;
-    private readonly IChatAiServiceFactory _chat;
+    private readonly ITranscriptionAiServiceFactory _transcriptionFactory;
+    private readonly IChatAiServiceFactory _chatFactory;
     private readonly StateMachine<State, Trigger> _machine;
 
     [ObservableProperty] private bool _isIdle;
@@ -41,10 +43,15 @@ public partial class MainScreenViewModel : ObservableObject
     [ObservableProperty] private bool _isProcessing;
     [ObservableProperty] private bool _isSettings;
     [ObservableProperty] private Profile _selectedProfile;
-    [ObservableProperty] private string _transcriptionText = "";
     [ObservableProperty] private string _processedText = "";
     [ObservableProperty] private string _activationHotkeyText = "";
     [ObservableProperty] private string _stopRecordingHotkeyText = "";
+
+    private WaveFilePath? _waveFilePath;
+    private ITranscriptionAiService? _transcriptionAiService;
+    private IChatAiService? _chatAiService;
+    private TranscriptText? _transcriptText;
+    private ChatResponceText? _chatResponseText;
 
     public IEnumerable<Profile> Profiles => _profiles.GetAll();
 
@@ -60,15 +67,18 @@ public partial class MainScreenViewModel : ObservableObject
         IAudioService audio,
         ITranscriptionAiServiceFactory transcription,
         IChatAiServiceFactory chat,
-        IWindowService window)
+        IWindowService window,
+        IClipBoardService clipboard)
     {
         _hotKey = hotKey;
         _profiles = profiles;
         _audio = audio;
-        _transcription = transcription;
-        _chat = chat;
+        _transcriptionFactory = transcription;
+        _chatFactory = chat;
         _window = window;
+        _clipboard = clipboard;
 
+        // TODO: DBからIDを提供して検索
         _selectedProfile = _profiles.GetAll().First();
 
         _machine = new(State.Idle);
@@ -84,7 +94,7 @@ public partial class MainScreenViewModel : ObservableObject
 
         ActivationHotkeyText = GetHotkeyText(ActivationHotkey) + " : Start recording";
         StopRecordingHotkeyText = GetHotkeyText(ActivationHotkey) + " : Stop recording\nESC: Cancel";
-
+        _clipboard = clipboard;
     }
 
     private string GetHotkeyText(Hotkey hotkey)
@@ -102,15 +112,62 @@ public partial class MainScreenViewModel : ObservableObject
             .PermitIf(Trigger.Retry, State.Processing, () => !string.IsNullOrEmpty(ProcessedText));
 
         _machine.Configure(State.Recording)
+            .OnEntry(OnEntryRecording)
+            .OnExitAsync(OnExitRecordingAsync)
             .Permit(Trigger.StopRecording, State.Processing)
             .Permit(Trigger.Cancel, State.Idle);
 
         _machine.Configure(State.Processing)
+            .OnEntry(() => Task.Run(OnEntryProcessingAsync))
             .Permit(Trigger.CompletedProcessing, State.Idle)
             .Permit(Trigger.Cancel, State.Idle);
 
         _machine.Configure(State.Settings)
             .Permit(Trigger.ExitSettings, State.Idle);
+    }
+
+    private void OnEntryRecording()
+    {
+        //_audio.StartRecording();
+        _waveFilePath = null;
+        _transcriptText = null;
+        _chatResponseText = null;
+    }
+
+    private async Task OnExitRecordingAsync()
+    {
+        //_waveFilePath = await _audio.StopRecordingAsync();
+    }
+
+    private async Task OnEntryProcessingAsync()
+    {
+        try
+        {
+            _transcriptionAiService = _transcriptionFactory.Create(Constants.TranscriptionAiModelMap[SelectedProfile.TranscriptionModelId]);
+            _chatAiService = _chatFactory.Create(Constants.ChatAiModelMap[SelectedProfile.ChatModelId]);
+
+            //if (_waveFilePath == null) throw new InvalidOperationException();
+
+            // transcriptTextをワイプしてない場合はTranscribeをスキップする。節約のため。
+            //if (_transcriptText == null)
+            //{
+            //    _transcriptText = await _transcriptionAiService.TranscribeAsync(_waveFilePath);
+            //}
+
+            _transcriptText = new("有権を争うカシミール地方で起きたテロ事件をめぐって、軍事行動の応酬が続いていたインドとパキスタンは、互いに攻撃を即時停止し、停戦することで合意しました。一方で、カシミール地方では両国の軍が厳重な警戒態勢を続けていて、このまま双方が攻撃を自制することができるのか予断を許さない情勢です。");
+
+            if (_transcriptText == null) throw new InvalidOperationException();
+            _chatResponseText = await _chatAiService.CompleteChatAsync(SelectedProfile.SystemPrompt, _transcriptText);
+
+            if (_chatResponseText == null) ProcessedText = string.Empty;
+            else ProcessedText = _chatResponseText.Value;
+
+            _clipboard.Paste(ProcessedText);
+        }
+        finally
+        {
+            _machine.Fire(Trigger.CompletedProcessing);
+        }
     }
 
     private void SetStateFlags(State state)
@@ -126,13 +183,12 @@ public partial class MainScreenViewModel : ObservableObject
         switch (_machine.State)
         {
             case State.Idle:
-                _window.Activate();
+                _window.SetTopmost(true);
                 _machine.Fire(Trigger.StartRecording);
                 break;
             case State.Recording:
-                _window.Activate();
-                _machine.Fire(Trigger.StopRecording);
-                Task.Run(() => ProcessTranscriptionAsync());
+                _window.SetTopmost(false);
+                Task.Run(() => _machine.FireAsync(Trigger.StopRecording));
                 break;
             default:
                 // nothing to do
@@ -170,11 +226,5 @@ public partial class MainScreenViewModel : ObservableObject
     [RelayCommand]
     public void ExitSettings() => _machine.Fire(Trigger.ExitSettings);
 
-    private async Task ProcessTranscriptionAsync()
-    {
-        await Task.Delay(1000);
-        ProcessedText = "Dummy";
-        _machine.Fire(Trigger.CompletedProcessing);
-    }
 
 }
