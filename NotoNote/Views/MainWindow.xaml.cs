@@ -1,6 +1,7 @@
 ﻿using NotoNote.Models;
 using NotoNote.Services;
 using NotoNote.ViewModels;
+using NotoNote.Views;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
@@ -13,7 +14,6 @@ namespace NotoNote;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private readonly MainWindowViewModel ViewModel;
     private readonly IHotKeyService _hotKeyService;
 
     private NotifyIcon notifyIcon = new();
@@ -70,12 +70,12 @@ public partial class MainWindow : Window
         Application.Current.Shutdown();
     }
 
-    public MainWindow(MainWindowViewModel vm, IHotKeyService hotKeyService)
+    public MainWindow(IHotKeyService hotKeyService, MainScreenView content)
     {
-        DataContext = vm;
-        ViewModel = vm;
         _hotKeyService = hotKeyService;
-        InitializeComponent();
+
         SetNotifyIcon();
+        InitializeComponent();
+        MainContent.Content = content;
     }
 }

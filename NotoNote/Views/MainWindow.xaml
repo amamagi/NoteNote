@@ -4,37 +4,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:local="clr-namespace:NotoNote"
     xmlns:vm="clr-namespace:NotoNote.ViewModels"
     xmlns:view="clr-namespace:NotoNote.Views"
-    d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}"
     mc:Ignorable="d"
     Title="Noto note"
     Width="550"
     Height="350"
     Topmost="True"
     ResizeMode="NoResize">
-    <Grid Margin="12">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="100"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <GroupBox Margin="10,5,10,10">
-            <StackPanel Grid.Column="0">
-                <Button Content="Start" Command="{Binding TransitionViewCommand}" CommandParameter="Start" Margin="10"/>
-                <Button Content="Settings" Command="{Binding TransitionViewCommand}" CommandParameter="Settings" Margin="10"/>
-            </StackPanel>
-        </GroupBox>
-        <Grid Grid.Column="1">
-            <Grid.Resources>
-                <DataTemplate DataType="{x:Type vm:StartViewModel}">
-                    <view:StartView />
-                </DataTemplate>
-                <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
-                    <view:SettingsView/>
-                </DataTemplate>
-            </Grid.Resources>
-            <ContentControl Content="{Binding ActiveView}"/>
-        </Grid>
-    </Grid>
+    <ContentPresenter x:Name="MainContent"/>
 </Window>

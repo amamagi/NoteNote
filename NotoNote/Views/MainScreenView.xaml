@@ -1,0 +1,112 @@
+﻿<UserControl x:Class="NotoNote.Views.MainScreenView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:NotoNote.Views"
+             xmlns:vm="clr-namespace:NotoNote.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
+    <Grid>
+        <!-- 待機画面 -->
+        <Grid Visibility="{Binding IsIdle, Converter={StaticResource BoolToVis}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <!-- プロファイル選択・設定 -->
+            <StackPanel Orientation="Horizontal" Margin="8">
+                <TextBlock Text="Profile:" VerticalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" Width="150" Margin="4,0"/>
+                <Button Content="Settings" Command="{Binding EnterSettingsCommand}" Margin="16, 0"/>
+            </StackPanel>
+
+            <!-- 待機表示 -->
+            <TextBlock Grid.Row="1" Text="Press hotkey to start recording..."
+                     FontSize="18" Foreground="Gray"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+            <!-- 結果表示 -->
+            <StackPanel Visibility="{Binding ShowProcessedText, Converter={StaticResource BoolToVis}}"
+                        Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBox Text="{Binding ProcessedText}" Width="250" Height="100" IsReadOnly="True" TextWrapping="Wrap"/>
+                <Button Content="Reprocess" Command="{Binding RetryCommand}" Width="100" Margin="0,8,0,0"/>
+            </StackPanel>
+
+            <!-- ホットキーガイド-->
+            <TextBlock Grid.Row="2" Text="Ctrl+Shift+Space: Start recording"
+                FontStyle="Italic" Foreground="DarkGray"
+                HorizontalAlignment="Center" Margin="0,8"/>
+        </Grid>
+
+        <!-- 録音画面 -->
+        <Grid Visibility="{Binding IsRecording, Converter={StaticResource BoolToVis}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- プロファイル選択無効化 -->
+            <StackPanel Orientation="Horizontal" Margin="8">
+                <TextBlock Text="Profile:" VerticalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" Width="150" Margin="4,0" IsEnabled="False"/>
+                <Button Content="Settings" Command="{Binding EnterSettingsCommand}" Margin="16,0" IsEnabled="False"/>
+            </StackPanel>
+
+            <!-- 録音アニメーション -->
+            <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar Width="200" Height="20" IsIndeterminate="True"/>
+                <TextBlock Text="Recording..." Margin="0,8,0,0" FontSize="16"/>
+            </StackPanel>
+
+            <!-- ホットキーガイド -->
+            <TextBlock Grid.Row="2" Text="Esc: Cancel" 
+                       FontStyle="Italic" Foreground="DarkGray"
+                       HorizontalAlignment="Center" Margin="0,8"/>
+        </Grid>
+
+        <!-- 処理画面 -->
+        <Grid Visibility="{Binding IsProcessing, Converter={StaticResource BoolToVis}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- プロファイル選択無効化 -->
+            <StackPanel Orientation="Horizontal" Margin="8">
+                <TextBlock Text="Profile:" VerticalAlignment="Center"/>
+                <ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" Width="150" Margin="4,0" IsEnabled="False"/>
+                <Button Content="Settings" Command="{Binding EnterSettingsCommand}" Margin="16,0" IsEnabled="False"/>
+            </StackPanel>
+
+            <!-- 処理アニメーション -->
+            <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ProgressBar Width="200" Height="20" IsIndeterminate="True"/>
+                <TextBlock Text="Processing..." Margin="0,8,0,0" FontSize="16"/>
+            </StackPanel>
+
+            <!-- ホットキーガイド -->
+            <TextBlock Grid.Row="2" Text="Esc: Cancel" 
+                       FontStyle="Italic" Foreground="DarkGray"
+                       HorizontalAlignment="Center" Margin="0,8"/>
+        </Grid>
+
+        <!-- 設定画面 -->
+        <Grid Visibility="{Binding IsSettings, Converter={StaticResource BoolToVis}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+            <local:SettingsView Grid.Row="0"/>
+            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8">
+                <Button Content="Back" Command="{Binding ExitSettingsCommand}" Width="80"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

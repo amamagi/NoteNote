@@ -5,11 +5,13 @@ namespace NotoNote.ViewModels;
 
 public partial class SettingsViewModel : ObservableObject
 {
+    private readonly IProfileRepository _profileRepository;
+
     [ObservableProperty]
     private IEnumerable<Profile> _profiles;
 
     public SettingsViewModel(IProfileRepository profiles)
     {
-        Profiles = profiles.GetAll();
+        _profileRepository = profiles;
     }
 }
