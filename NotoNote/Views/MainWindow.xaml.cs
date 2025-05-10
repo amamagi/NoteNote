@@ -1,4 +1,5 @@
-﻿using NotoNote.Models;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using NotoNote.Models;
 using NotoNote.Services;
 using NotoNote.ViewModels;
 using NotoNote.Views;

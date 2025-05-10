@@ -1,24 +1,26 @@
 ﻿using NotoNote.Models;
 using Open.WinKeyboardHook;
-using System.Collections.Concurrent;
+using System.Windows.Threading;
 
 namespace NotoNote.Services;
 public sealed class HotkeyService : IHotkeyService, IDisposable
 {
 
-    private readonly IKeyboardInterceptor _interceptor;
     private readonly Dictionary<Hotkey, Action> _keyUpCallbacks = [];
+    private IKeyboardInterceptor? _interceptor;
+    private Dispatcher _uiDispatcher;
 
-    public HotkeyService()
+    public HotkeyService(Dispatcher uiDispatcher)
     {
+        _uiDispatcher = uiDispatcher;
         _interceptor = new KeyboardInterceptor();
-        _interceptor.StartCapturing();
         _interceptor.KeyUp += InterceptorOnKeyUp;
+        _interceptor.StartCapturing();
     }
 
     public void Dispose()
     {
-        _interceptor.StopCapturing();
+        _interceptor?.StopCapturing();
     }
 
     public void RegisterHotkey(Hotkey hotkey, Action callback)
@@ -48,7 +50,7 @@ public sealed class HotkeyService : IHotkeyService, IDisposable
             if (callback.Key == hotkey)
             {
                 handled = true;
-                callback.Value();
+                _uiDispatcher.BeginInvoke(callback.Value);
             }
         }
         return handled;

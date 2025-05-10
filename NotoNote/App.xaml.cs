@@ -28,10 +28,11 @@ public partial class App : Application
                 services.Configure<OpenAiOptions>(ctx.Configuration.GetSection("OpenAI"));
                 services.Configure<List<PresetProfileOptions>>(ctx.Configuration.GetSection("PresetProfiles"));
 
+                services.AddSingleton<IWindowService, WindowService>();
                 services.AddSingleton<ILiteDbContext, LiteDbContext>();
                 services.AddSingleton<IPresetProfileProvider, PresetProfileProvider>();
                 services.AddSingleton<IProfileRepository, ProfileRepository>();
-                services.AddSingleton<IHotkeyService, HotkeyService>();
+                services.AddSingleton<IHotkeyService, HotkeyService>((_) => new HotkeyService(Application.Current.Dispatcher));
                 services.AddSingleton<IApiKeyRegistry, OptionApiKeyRegistry>();
                 services.AddSingleton<IAudioService, AudioService>();
                 services.AddSingleton<ITranscriptionAiServiceFactory, TranscriptionAiServiceFactory>();

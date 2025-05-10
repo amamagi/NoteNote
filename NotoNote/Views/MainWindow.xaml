@@ -10,7 +10,6 @@
     Title="Noto note"
     Width="450"
     Height="300"
-    Topmost="True"
     ResizeMode="NoResize">
     <ContentPresenter x:Name="MainContent"/>
 </Window>

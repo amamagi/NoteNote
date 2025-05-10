@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Messaging.Messages;
 using NotoNote.Models;
 using Stateless;
 using System.Text;
@@ -29,6 +31,7 @@ public partial class MainScreenViewModel : ObservableObject
     private readonly Hotkey ActivationHotkey = new(Keys.K, Keys.Shift | Keys.Control);
     private readonly Hotkey CancelHotkey = new(Keys.Escape, Keys.None);
 
+    private readonly IWindowService _window;
     private readonly IHotkeyService _hotKey;
     private readonly IProfileRepository _profiles;
     private readonly IAudioService _audio;
@@ -51,31 +54,38 @@ public partial class MainScreenViewModel : ObservableObject
     /// </summary>
     public bool ShowProcessedText => IsIdle && !string.IsNullOrEmpty(ProcessedText);
 
+
     public MainScreenViewModel(
         IHotkeyService hotKey,
         IProfileRepository profiles,
         IAudioService audio,
         ITranscriptionAiServiceFactory transcription,
-        IChatAiServiceFactory chat)
+        IChatAiServiceFactory chat,
+        IWindowService window)
     {
         _hotKey = hotKey;
         _profiles = profiles;
         _audio = audio;
         _transcription = transcription;
         _chat = chat;
+        _window = window;
 
         _selectedProfile = _profiles.GetAll().First();
 
         _machine = new(State.Idle);
         ConfigureStateMachine();
         SetStateFlags(_machine.State);
-        _machine.OnTransitioned(t => SetStateFlags(t.Destination));
+        _machine.OnTransitioned(t =>
+        {
+            SetStateFlags(t.Destination);
+        });
 
         _hotKey.RegisterHotkey(ActivationHotkey, HandleActivationHotkey);
         _hotKey.RegisterHotkey(CancelHotkey, HandleCancelHotkey);
 
         ActivationHotkeyText = GetHotkeyText(ActivationHotkey) + " : Start recording";
         StopRecordingHotkeyText = GetHotkeyText(ActivationHotkey) + " : Stop recording\nESC: Cancel";
+
     }
 
     private string GetHotkeyText(Hotkey hotkey)
@@ -117,9 +127,11 @@ public partial class MainScreenViewModel : ObservableObject
         switch (_machine.State)
         {
             case State.Idle:
+                _window.Activate();
                 _machine.Fire(Trigger.StartRecording);
                 break;
             case State.Recording:
+                _window.Activate();
                 _machine.Fire(Trigger.StopRecording);
                 Task.Run(() => ProcessTranscriptionAsync());
                 break;
@@ -135,6 +147,7 @@ public partial class MainScreenViewModel : ObservableObject
         {
             case State.Recording:
             case State.Processing:
+                _window.Activate();
                 _machine.Fire(Trigger.Cancel);
                 break;
             default:
