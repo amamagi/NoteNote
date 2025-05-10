@@ -2,7 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using NotoNote.Models;
 using Stateless;
-using System;
+using System.Text;
 
 namespace NotoNote.ViewModels;
 public partial class MainScreenViewModel : ObservableObject
@@ -26,7 +26,10 @@ public partial class MainScreenViewModel : ObservableObject
         ExitSettings,
     }
 
-    private readonly IHotKeyService _hotKey;
+    private readonly Hotkey ActivationHotkey = new(Keys.K, Keys.Shift | Keys.Control);
+    private readonly Hotkey CancelHotkey = new(Keys.Escape, Keys.None);
+
+    private readonly IHotkeyService _hotKey;
     private readonly IProfileRepository _profiles;
     private readonly IAudioService _audio;
     private readonly ITranscriptionAiServiceFactory _transcription;
@@ -40,6 +43,8 @@ public partial class MainScreenViewModel : ObservableObject
     [ObservableProperty] private Profile _selectedProfile;
     [ObservableProperty] private string _transcriptionText = "";
     [ObservableProperty] private string _processedText = "";
+    [ObservableProperty] private string _activationHotkeyText = "";
+    [ObservableProperty] private string _stopRecordingHotkeyText = "";
 
     /// <summary>
     /// Idle画面でProcessedTextを表示可能か
@@ -47,7 +52,7 @@ public partial class MainScreenViewModel : ObservableObject
     public bool ShowProcessedText => IsIdle && !string.IsNullOrEmpty(ProcessedText);
 
     public MainScreenViewModel(
-        IHotKeyService hotKey,
+        IHotkeyService hotKey,
         IProfileRepository profiles,
         IAudioService audio,
         ITranscriptionAiServiceFactory transcription,
@@ -65,6 +70,17 @@ public partial class MainScreenViewModel : ObservableObject
         ConfigureStateMachine();
         SetStateFlags(_machine.State);
         _machine.OnTransitioned(t => SetStateFlags(t.Destination));
+
+        _hotKey.RegisterHotkey(ActivationHotkey, HandleActivationHotkey);
+        _hotKey.RegisterHotkey(CancelHotkey, HandleCancelHotkey);
+
+        ActivationHotkeyText = GetHotkeyText(ActivationHotkey) + " : Start recording";
+        StopRecordingHotkeyText = GetHotkeyText(ActivationHotkey) + " : Stop recording\nESC: Cancel";
+    }
+
+    private string GetHotkeyText(Hotkey hotkey)
+    {
+        return hotkey.Modifiers.ToString().Replace(", ", "+") + "+" + hotkey.Key.ToString();
     }
 
     private void ConfigureStateMachine()
@@ -96,22 +112,39 @@ public partial class MainScreenViewModel : ObservableObject
         IsSettings = state == State.Settings;
     }
 
-    [RelayCommand]
-    public async Task HandleHotkeyAsync()
+    private void HandleActivationHotkey()
     {
-        var current = _machine.State;
-
-        switch (current)
+        switch (_machine.State)
         {
             case State.Idle:
                 _machine.Fire(Trigger.StartRecording);
                 break;
             case State.Recording:
                 _machine.Fire(Trigger.StopRecording);
-                await ProcessTranscriptionAsync();
+                Task.Run(() => ProcessTranscriptionAsync());
+                break;
+            default:
+                // nothing to do
                 break;
         }
     }
+
+    private void HandleCancelHotkey()
+    {
+        switch (_machine.State)
+        {
+            case State.Recording:
+            case State.Processing:
+                _machine.Fire(Trigger.Cancel);
+                break;
+            default:
+                // nothing to do
+                break;
+        }
+    }
+
+    [RelayCommand]
+    public void StartRecording() => _machine.Fire(Trigger.StartRecording);
 
     [RelayCommand]
     public void Cancel() => _machine.Fire(Trigger.Cancel);

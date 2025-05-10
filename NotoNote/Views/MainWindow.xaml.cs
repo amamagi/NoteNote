@@ -14,18 +14,12 @@ namespace NotoNote;
 /// </summary>
 public partial class MainWindow : Window
 {
-    private readonly IHotKeyService _hotKeyService;
-
     private NotifyIcon notifyIcon = new();
     private readonly Dictionary<string, ToolStripMenuItem> _toolStripMenuItems = [];
 
     protected override void OnSourceInitialized(EventArgs e)
     {
         base.OnSourceInitialized(e);
-        _hotKeyService.LazyInit(
-            this,
-            HotKeyService.Modifiers.Ctrl | HotKeyService.Modifiers.Shift,
-            (uint)KeyInterop.VirtualKeyFromKey(Key.Space));
     }
 
     private void SetNotifyIcon()
@@ -70,10 +64,8 @@ public partial class MainWindow : Window
         Application.Current.Shutdown();
     }
 
-    public MainWindow(IHotKeyService hotKeyService, MainScreenView content)
+    public MainWindow(MainScreenView content)
     {
-        _hotKeyService = hotKeyService;
-
         SetNotifyIcon();
         InitializeComponent();
         MainContent.Content = content;

@@ -1,60 +1,58 @@
 ﻿using NotoNote.Models;
-using System.ComponentModel;
-using System.Windows;
-using System.Windows.Interop;
+using Open.WinKeyboardHook;
+using System.Collections.Concurrent;
 
 namespace NotoNote.Services;
-public sealed class HotKeyService : IHotKeyService, IDisposable
+public sealed class HotkeyService : IHotkeyService, IDisposable
 {
-    private Window _window;
-    private int _id;
-    private HwndSource _source;
 
-    public event EventHandler? HotKeyPressed;
+    private readonly IKeyboardInterceptor _interceptor;
+    private readonly Dictionary<Hotkey, Action> _keyUpCallbacks = [];
 
-    private IntPtr HwndHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    public HotkeyService()
     {
-        const int WH_HOTKEY = 0x0312;
-        if (msg == WH_HOTKEY && wParam.ToInt32() == _id)
-        {
-            HotKeyPressed?.Invoke(this, EventArgs.Empty);
-            handled = true;
-        }
-        return IntPtr.Zero;
+        _interceptor = new KeyboardInterceptor();
+        _interceptor.StartCapturing();
+        _interceptor.KeyUp += InterceptorOnKeyUp;
     }
 
     public void Dispose()
     {
-        _source.RemoveHook(HwndHook);
-        NativeMethods.UnregisterHotKey(_source.Handle, _id);
-
+        _interceptor.StopCapturing();
     }
 
-    public void LazyInit(Window window, uint modifiers, uint key)
+    public void RegisterHotkey(Hotkey hotkey, Action callback)
     {
-        _window = window;
-        _id = GetHashCode();
-        _source = (HwndSource)PresentationSource.FromVisual(window);
-        _source.AddHook(HwndHook);
-
-        bool ok = NativeMethods.RegisterHotKey(_source.Handle, _id, modifiers, key);
-        if (!ok) throw new Win32Exception();
+        _keyUpCallbacks[hotkey] = callback;
     }
 
-    public void SetCallback(Action action)
+    public void UnregisterHotkey(Hotkey hotkey)
     {
-        HotKeyPressed += (_, _) => action();
+        _keyUpCallbacks.Remove(hotkey);
     }
 
-    public void Clean()
+    private void InterceptorOnKeyUp(object? sender, KeyEventArgs args)
     {
-        HotKeyPressed = null;
+        var keys = args.KeyCode & ~Keys.Modifiers;
+        var modifiers = args.Modifiers;
+        var hotkey = new Hotkey(keys, modifiers);
+        var handled = InvokeCallbacks(hotkey, _keyUpCallbacks);
+        if (handled) args.SuppressKeyPress = true;
     }
 
-    public static class Modifiers
+    private bool InvokeCallbacks(Hotkey hotkey, Dictionary<Hotkey, Action> callbacks)
     {
-        public const uint Ctrl = 0x0002;
-        public const uint Shift = 0x0004;
+        bool handled = false;
+        foreach (var callback in callbacks)
+        {
+            if (callback.Key == hotkey)
+            {
+                handled = true;
+                callback.Value();
+            }
+        }
+        return handled;
     }
+
 }
 

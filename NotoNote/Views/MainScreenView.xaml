@@ -6,7 +6,8 @@
              xmlns:local="clr-namespace:NotoNote.Views"
              xmlns:vm="clr-namespace:NotoNote.ViewModels"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignWidth="350"
+             d:DesignHeight="200" >
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis"/>
     </UserControl.Resources>
@@ -33,12 +34,12 @@
             <!-- 結果表示 -->
             <StackPanel Visibility="{Binding ShowProcessedText, Converter={StaticResource BoolToVis}}"
                         Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBox Text="{Binding ProcessedText}" Width="250" Height="100" IsReadOnly="True" TextWrapping="Wrap"/>
+                <TextBox Text="{Binding ProcessedText}" IsReadOnly="True" TextWrapping="Wrap" Height="100" Width="300"/>
                 <Button Content="Reprocess" Command="{Binding RetryCommand}" Width="100" Margin="0,8,0,0"/>
             </StackPanel>
 
             <!-- ホットキーガイド-->
-            <TextBlock Grid.Row="2" Text="Ctrl+Shift+Space: Start recording"
+            <TextBlock Grid.Row="2" Text="{Binding ActivationHotkeyText}"
                 FontStyle="Italic" Foreground="DarkGray"
                 HorizontalAlignment="Center" Margin="0,8"/>
         </Grid>
@@ -65,9 +66,9 @@
             </StackPanel>
 
             <!-- ホットキーガイド -->
-            <TextBlock Grid.Row="2" Text="Esc: Cancel" 
+            <TextBlock Grid.Row="2" Text="{Binding StopRecordingHotkeyText}" 
                        FontStyle="Italic" Foreground="DarkGray"
-                       HorizontalAlignment="Center" Margin="0,8"/>
+                       HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,8"/>
         </Grid>
 
         <!-- 処理画面 -->

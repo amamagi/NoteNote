@@ -31,7 +31,7 @@ public partial class App : Application
                 services.AddSingleton<ILiteDbContext, LiteDbContext>();
                 services.AddSingleton<IPresetProfileProvider, PresetProfileProvider>();
                 services.AddSingleton<IProfileRepository, ProfileRepository>();
-                services.AddSingleton<IHotKeyService, HotKeyService>();
+                services.AddSingleton<IHotkeyService, HotkeyService>();
                 services.AddSingleton<IApiKeyRegistry, OptionApiKeyRegistry>();
                 services.AddSingleton<IAudioService, AudioService>();
                 services.AddSingleton<ITranscriptionAiServiceFactory, TranscriptionAiServiceFactory>();
