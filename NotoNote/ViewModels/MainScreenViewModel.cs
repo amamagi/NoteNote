@@ -1,10 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using CommunityToolkit.Mvvm.Messaging;
-using CommunityToolkit.Mvvm.Messaging.Messages;
 using NotoNote.Models;
 using Stateless;
-using System.Text;
 
 namespace NotoNote.ViewModels;
 public partial class MainScreenViewModel : ObservableObject
@@ -48,6 +45,8 @@ public partial class MainScreenViewModel : ObservableObject
     [ObservableProperty] private string _processedText = "";
     [ObservableProperty] private string _activationHotkeyText = "";
     [ObservableProperty] private string _stopRecordingHotkeyText = "";
+
+    public IEnumerable<Profile> Profiles => _profiles.GetAll();
 
     /// <summary>
     /// Idle画面でProcessedTextを表示可能か
