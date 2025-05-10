@@ -14,8 +14,7 @@ public sealed class LiteDbContext : ILiteDbContext
     public ILiteCollection<DbMetadataDto> Metadata => _db.GetCollection<DbMetadataDto>("metadata");
 
     private static readonly string DefaultPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "NotoNote",
+        Path.GetDirectoryName(Application.ExecutablePath)!,
         "data.db");
 
     private readonly LiteDatabase _db;
