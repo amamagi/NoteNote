@@ -26,7 +26,8 @@ public partial class MainScreenViewModel : ObservableObject
         ExitSettings,
     }
 
-    private readonly Hotkey ActivationHotkey = new(Keys.S, Keys.Shift | Keys.Control);
+    private readonly Hotkey ActivationHotkey = new(Keys.Space, Keys.Shift | Keys.Control);
+    private readonly Hotkey ToggleProfileHotkey = new(Keys.S, Keys.Shift | Keys.Control);
     private readonly Hotkey CancelHotkey = new(Keys.Escape, Keys.None);
 
     private readonly IClipBoardService _clipboard;
@@ -86,8 +87,9 @@ public partial class MainScreenViewModel : ObservableObject
 
         _hotKey.RegisterHotkey(ActivationHotkey, HandleActivationHotkey);
         _hotKey.RegisterHotkey(CancelHotkey, HandleCancelHotkey);
+        _hotKey.RegisterHotkey(ToggleProfileHotkey, HandleProfileToggleHotkey);
 
-        ActivationHotkeyText = GetHotkeyText(ActivationHotkey) + " : Start recording";
+        ActivationHotkeyText = GetHotkeyText(ActivationHotkey) + " : Start recording\n" + GetHotkeyText(ToggleProfileHotkey) + " : Toggle profiles";
         StopRecordingHotkeyText = GetHotkeyText(ActivationHotkey) + " : Stop recording\nESC: Cancel";
         _clipboard = clipboard;
     }
@@ -229,6 +231,22 @@ public partial class MainScreenViewModel : ObservableObject
                 break;
             default:
                 // nothing to do
+                break;
+        }
+    }
+
+    private void HandleProfileToggleHotkey()
+    {
+        switch (_machine.State)
+        {
+            case State.Idle:
+                _window.Activate();
+                var profiles = Profiles.ToList();
+                var index = profiles.IndexOf(SelectedProfile);
+                var profilesCount = profiles.Count;
+                SelectedProfile = profiles[(index + 1) % profilesCount];
+                break;
+            default:
                 break;
         }
     }
