@@ -23,7 +23,7 @@
             <StackPanel Orientation="Horizontal" Margin="8">
                 <TextBlock Text="Profile:" VerticalAlignment="Center"/>
                 <ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" Width="150" Margin="4,0" DisplayMemberPath="Name.Value"/>
-                <Button Content="Settings" Command="{Binding EnterSettingsCommand}" Margin="16, 0"/>
+                <Button Content="Settings" Command="{Binding EnterSettingsCommand}" Margin="8, 0"/>
             </StackPanel>
 
             <!-- 待機表示 -->
@@ -32,11 +32,18 @@
                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
             <!-- 結果表示 -->
-            <StackPanel Visibility="{Binding HasProcessedText, Converter={StaticResource BoolToVis}}"
-                        Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBox Text="{Binding ProcessedText}" IsReadOnly="True" TextWrapping="Wrap" Height="100" Width="330"/>
-                <Button Content="Reprocess" Command="{Binding RetryCommand}" Width="100" Margin="0,8,0,0"/>
-            </StackPanel>
+            <Grid Visibility="{Binding HasProcessedText, Converter={StaticResource BoolToVis}}"
+                        Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        Margin="16, 8">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+                <TextBox Grid.Row="0" Text="{Binding ProcessedText}"  
+                         IsReadOnly="True" TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto"/>
+                <Button Grid.Row="1" Content="Reprocess" Command="{Binding RetryCommand}" Width="100" Margin="0,8,0,0"/>
+            </Grid>
 
             <!-- ホットキーガイド-->
             <TextBlock Grid.Row="2" Text="{Binding ActivationHotkeyText}"

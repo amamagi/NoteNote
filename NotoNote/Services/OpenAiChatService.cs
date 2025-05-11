@@ -12,11 +12,12 @@ public sealed class OpenAiChatService : IChatAiService
         _client = new ChatClient(model.Value, apiKey.Value);
     }
 
-    public async Task<ChatResponceText> CompleteChatAsync(SystemPrompt systemPrompt, TranscriptText transcript)
+    public async Task<ChatResponceText> CompleteChatAsync(SystemPrompt systemPrompt, TranscriptText transcript, CancellationToken ct = default)
     {
-        var completion = await _client.CompleteChatAsync(systemPrompt.Value, transcript.Value);
+        var systemMessage = new SystemChatMessage(systemPrompt.Value);
+        var userMessage = new UserChatMessage(transcript.Value);
+        var completion = await _client.CompleteChatAsync([systemMessage, userMessage], cancellationToken: ct);
         var response = completion.Value.Content[0].Text;
         return new(response);
     }
-
 }
