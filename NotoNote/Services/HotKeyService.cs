@@ -5,8 +5,7 @@ using System.Windows.Threading;
 namespace NotoNote.Services;
 public sealed class HotkeyService : IHotkeyService, IDisposable
 {
-
-    private readonly Dictionary<Hotkey, Action> _keyUpCallbacks = [];
+    private readonly Dictionary<Hotkey, Action> _hotkeyCallbacks = [];
     private IKeyboardInterceptor? _interceptor;
     private Dispatcher _uiDispatcher;
 
@@ -14,7 +13,7 @@ public sealed class HotkeyService : IHotkeyService, IDisposable
     {
         _uiDispatcher = uiDispatcher;
         _interceptor = new KeyboardInterceptor();
-        _interceptor.KeyUp += InterceptorOnKeyUp;
+        _interceptor.KeyDown += InterceptorOnKeyDown;
         _interceptor.StartCapturing();
     }
 
@@ -25,20 +24,20 @@ public sealed class HotkeyService : IHotkeyService, IDisposable
 
     public void RegisterHotkey(Hotkey hotkey, Action callback)
     {
-        _keyUpCallbacks[hotkey] = callback;
+        _hotkeyCallbacks[hotkey] = callback;
     }
 
     public void UnregisterHotkey(Hotkey hotkey)
     {
-        _keyUpCallbacks.Remove(hotkey);
+        _hotkeyCallbacks.Remove(hotkey);
     }
 
-    private void InterceptorOnKeyUp(object? sender, KeyEventArgs args)
+    private void InterceptorOnKeyDown(object? sender, KeyEventArgs args)
     {
         var keys = args.KeyCode & ~Keys.Modifiers;
         var modifiers = args.Modifiers;
         var hotkey = new Hotkey(keys, modifiers);
-        var handled = InvokeCallbacks(hotkey, _keyUpCallbacks);
+        var handled = InvokeCallbacks(hotkey, _hotkeyCallbacks);
         if (handled) args.SuppressKeyPress = true;
     }
 
