@@ -28,16 +28,21 @@ public partial class App : Application
                 services.Configure<OpenAiOptions>(ctx.Configuration.GetSection("OpenAI"));
                 services.Configure<List<PresetProfileOptions>>(ctx.Configuration.GetSection("PresetProfiles"));
 
-                services.AddSingleton<IWindowService, WindowService>();
+                // DataStore
                 services.AddSingleton<ILiteDbContext, LiteDbContext>();
+                services.AddSingleton<IApiKeyRepository, ApiKeyRepository>();
                 services.AddSingleton<IPresetProfileProvider, PresetProfileProvider>();
                 services.AddSingleton<IProfileRepository, ProfileRepository>();
+
+                // Services
+                services.AddSingleton<IWindowService, WindowService>();
                 services.AddSingleton<IHotkeyService, HotkeyService>((_) => new HotkeyService(Current.Dispatcher));
                 services.AddSingleton<IClipBoardService, ClipBoardService>((_) => new ClipBoardService(Current.Dispatcher));
-                services.AddSingleton<IApiKeyRegistry, OptionApiKeyRegistry>();
                 services.AddSingleton<IAudioService, AudioService>();
                 services.AddSingleton<ITranscriptionAiServiceFactory, TranscriptionAiServiceFactory>();
                 services.AddSingleton<IChatAiServiceFactory, ChatAiServiceFactory>();
+
+                // Views/ViewModels
                 services.AddSingleton<SettingsViewModel>();
                 services.AddSingleton<SettingsView>();
                 services.AddSingleton<MainScreenViewModel>();

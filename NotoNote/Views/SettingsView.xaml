@@ -16,13 +16,13 @@
                     <StackPanel Margin="8">
                         <!-- API KEY -->
                         <TextBlock Text="API Key: OpenAI" FontSize="15"/>
-                        <PasswordBox Margin="8,8,8,0" PasswordChar="{Binding OpenAiApiKey}"/>
+                        <TextBox Margin="8,8,8,0" Text="{Binding OpenAiApiKey}"/>
 
                         <!-- HOTKEY 1-->
                         <TextBlock Text="Hotkey: Activation" FontSize="15" Margin="0,8,0,0"/>
                         <StackPanel Orientation="Horizontal" Margin="4">
                             <TextBlock Text="Key: " />
-                            <TextBox Width="50" Text="{Binding HotkeyActivation.Key}"/>
+                            <ComboBox ItemsSource="{Binding AvailableKeys}"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="4">
                             <TextBlock Text="Shift: "/>

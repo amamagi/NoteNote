@@ -1,19 +1,13 @@
 ﻿namespace NotoNote.Models;
 
-public interface IApiKeyRegistry
-{
-    public Dictionary<AiProvider, ApiKey> Keys { get; }
-}
-
-public enum AiProvider
-{
-    OpenAI,
-
-}
-public record ApiKey(string Value) : RecordWithValidation
+public record ApiKey(ApiProvider Provider, string Value) : RecordWithValidation
 {
     protected override void Validate()
     {
-        if (string.IsNullOrEmpty(Value)) throw new ArgumentException("ApiKey must not be null or empty");
+        if (string.IsNullOrEmpty(Value)) throw new ArgumentException("ApiKey.Value must not be null or empty");
     }
+}
+public enum ApiProvider
+{
+    OpenAI
 }
