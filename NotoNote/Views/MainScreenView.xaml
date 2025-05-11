@@ -111,7 +111,7 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
-            <local:SettingsView Grid.Row="0"/>
+            <ContentControl Grid.Row="0" x:Name="SettingsHost"/>
             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8">
                 <Button Content="Back" Command="{Binding ExitSettingsCommand}" Width="80"/>
             </StackPanel>

@@ -38,6 +38,8 @@ public partial class App : Application
                 services.AddSingleton<IAudioService, AudioService>();
                 services.AddSingleton<ITranscriptionAiServiceFactory, TranscriptionAiServiceFactory>();
                 services.AddSingleton<IChatAiServiceFactory, ChatAiServiceFactory>();
+                services.AddSingleton<SettingsViewModel>();
+                services.AddSingleton<SettingsView>();
                 services.AddSingleton<MainScreenViewModel>();
                 services.AddSingleton<MainScreenView>();
                 services.AddSingleton<MainWindow>();

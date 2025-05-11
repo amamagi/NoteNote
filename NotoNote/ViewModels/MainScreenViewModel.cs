@@ -82,7 +82,8 @@ public partial class MainScreenViewModel : ObservableObject
         // TODO: DBからIDを提供して検索
         _selectedProfile = _profiles.GetAll().First();
 
-        _machine = new(State.Idle);
+        //_machine = new(State.Idle);
+        _machine = new(State.Settings);
         ConfigureStateMachine();
 
         _hotKey.RegisterHotkey(ActivationHotkey, HandleActivationHotkey);

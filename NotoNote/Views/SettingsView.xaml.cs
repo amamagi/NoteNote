@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NotoNote.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,12 +16,13 @@ using System.Windows.Shapes;
 
 namespace NotoNote.Views;
 /// <summary>
-/// Interaction logic for ProfilesView.xaml
+/// Interaction logic for SettingsView.xaml
 /// </summary>
 public partial class SettingsView : System.Windows.Controls.UserControl
 {
-    public SettingsView()
+    public SettingsView(SettingsViewModel vm)
     {
         InitializeComponent();
+        DataContext = vm;
     }
 }

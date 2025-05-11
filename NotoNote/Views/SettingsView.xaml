@@ -4,11 +4,62 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:NotoNote.Views"
-             xmlns:vm="clr-namespace:NotoNote.ViewModels"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="200">
-    <Grid Margin="8">
-        <TextBlock Text="設定画面" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid Margin="8,8,8,0">
+        <TabControl>
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Text="General"/>
+                </TabItem.Header>
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="8">
+                        <!-- API KEY -->
+                        <TextBlock Text="API Key: OpenAI" FontSize="15"/>
+                        <PasswordBox Margin="8,8,8,0" PasswordChar="{Binding OpenAiApiKey}"/>
 
+                        <!-- HOTKEY 1-->
+                        <TextBlock Text="Hotkey: Activation" FontSize="15" Margin="0,8,0,0"/>
+                        <StackPanel Orientation="Horizontal" Margin="4">
+                            <TextBlock Text="Key: " />
+                            <TextBox Width="50" Text="{Binding HotkeyActivation.Key}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="4">
+                            <TextBlock Text="Shift: "/>
+                            <CheckBox IsChecked="{Binding HotkeyActivation.Shift}"/>
+                            <TextBlock Text="Ctrl: " Margin="4,0,0,0"/>
+                            <CheckBox IsChecked="{Binding HotkeyActivation.Ctrl}"/>
+                            <TextBlock Text="Alt: " Margin="4,0,0,0" />
+                            <CheckBox IsChecked="{Binding HotkeyActivation.Alt}"/>
+                        </StackPanel>
+
+                        <!-- HOTKEY 2 -->
+                        <TextBlock Text="Hotkey: Toggle profiles" FontSize="15" Margin="0,8,0,0"/>
+                        <StackPanel Orientation="Horizontal" Margin="4">
+                            <TextBlock Text="Key: " />
+                            <TextBox Width="50" Text="{Binding HotkeyToggleProfile.Key}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="4">
+                            <TextBlock Text="Shift: "/>
+                            <CheckBox IsChecked="{Binding HotkeyToggleProfile.Shift}"/>
+                            <TextBlock Text="Ctrl: " Margin="4,0,0,0"/>
+                            <CheckBox IsChecked="{Binding HotkeyToggleProfile.Ctrl}"/>
+                            <TextBlock Text="Alt: " Margin="4,0,0,0" />
+                            <CheckBox IsChecked="{Binding HotkeyToggleProfile.Alt}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem>
+                <TabItem.Header>
+                    <TextBlock Text="Profiles"/>
+                </TabItem.Header>
+                <StackPanel Margin="8">
+                    <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Label Content="Profile settings"/>
+                    </Grid>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>

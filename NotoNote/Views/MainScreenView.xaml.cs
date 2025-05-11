@@ -20,9 +20,10 @@ namespace NotoNote.Views;
 /// </summary>
 public partial class MainScreenView : System.Windows.Controls.UserControl
 {
-    public MainScreenView(MainScreenViewModel vm)
+    public MainScreenView(MainScreenViewModel vm, SettingsView settingView)
     {
         InitializeComponent();
         DataContext = vm;
+        SettingsHost.Content = settingView;
     }
 }
