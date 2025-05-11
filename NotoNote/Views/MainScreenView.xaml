@@ -32,7 +32,7 @@
                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
             <!-- 結果表示 -->
-            <StackPanel Visibility="{Binding ShowProcessedText, Converter={StaticResource BoolToVis}}"
+            <StackPanel Visibility="{Binding HasProcessedText, Converter={StaticResource BoolToVis}}"
                         Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBox Text="{Binding ProcessedText}" IsReadOnly="True" TextWrapping="Wrap" Height="100" Width="330"/>
                 <Button Content="Reprocess" Command="{Binding RetryCommand}" Width="100" Margin="0,8,0,0"/>

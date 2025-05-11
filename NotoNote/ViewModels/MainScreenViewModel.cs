@@ -56,9 +56,9 @@ public partial class MainScreenViewModel : ObservableObject
     public IEnumerable<Profile> Profiles => _profiles.GetAll();
 
     /// <summary>
-    /// Idle画面でProcessedTextを表示可能か
+    /// ProcessedTextをもち再処理が可能か
     /// </summary>
-    public bool ShowProcessedText => IsIdle && !string.IsNullOrEmpty(ProcessedText);
+    public bool HasProcessedText => !string.IsNullOrEmpty(ProcessedText);
 
 
     public MainScreenViewModel(
@@ -83,11 +83,6 @@ public partial class MainScreenViewModel : ObservableObject
 
         _machine = new(State.Idle);
         ConfigureStateMachine();
-        SetStateFlags(_machine.State);
-        _machine.OnTransitioned(t =>
-        {
-            SetStateFlags(t.Destination);
-        });
 
         _hotKey.RegisterHotkey(ActivationHotkey, HandleActivationHotkey);
         _hotKey.RegisterHotkey(CancelHotkey, HandleCancelHotkey);
@@ -105,11 +100,11 @@ public partial class MainScreenViewModel : ObservableObject
     private void ConfigureStateMachine()
     {
         _machine.Configure(State.Idle)
-            .OnEntry(() => OnPropertyChanged(nameof(ShowProcessedText)))
+            .OnEntry(OnEntryIdle)
             .Permit(Trigger.StartRecording, State.Recording)
             .Permit(Trigger.EnterSettings, State.Settings)
             // 処理済みテキストがあるなら再処理が可能
-            .PermitIf(Trigger.Retry, State.Processing, () => !string.IsNullOrEmpty(ProcessedText));
+            .PermitIf(Trigger.Retry, State.Processing, () => HasProcessedText);
 
         _machine.Configure(State.Recording)
             .OnEntry(OnEntryRecording)
@@ -124,6 +119,15 @@ public partial class MainScreenViewModel : ObservableObject
 
         _machine.Configure(State.Settings)
             .Permit(Trigger.ExitSettings, State.Idle);
+
+        // _machine.Stateをフラグに反映
+        SetStateFlags(_machine.State);
+        _machine.OnTransitioned(t => SetStateFlags(t.Destination));
+    }
+
+    private void OnEntryIdle()
+    {
+        OnPropertyChanged(nameof(HasProcessedText));
     }
 
     private void OnEntryRecording()
