@@ -1,14 +1,16 @@
-﻿using NotoNote.Models;
+﻿using LiteDB;
+using NotoNote.Models;
 
 namespace NotoNote.DataStore;
 public sealed class ProfileDto
 {
+    [BsonId]
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string SystemPrompt { get; set; } = string.Empty;
     public string TranscriptionAiModelId { get; set; } = string.Empty;
     public string ChatModelId { get; set; } = string.Empty;
-    public int Order { get; set; } = 0;
+    public Guid Next { get; set; } = 0;
 }
 
 public static class ProfileExtensions
@@ -22,7 +24,7 @@ public static class ProfileExtensions
             new TranscriptionAiModelId(dto.TranscriptionAiModelId),
             new ChatAiModelId(dto.ChatModelId));
     }
-    public static ProfileDto ToDto(this Profile model, int order = int.MaxValue)
+    public static ProfileDto ToDto(this Profile model, Guid next)
     {
         return new ProfileDto
         {
@@ -31,7 +33,7 @@ public static class ProfileExtensions
             SystemPrompt = model.SystemPrompt.Value,
             TranscriptionAiModelId = model.TranscriptionModelId.Value,
             ChatModelId = model.ChatModelId.Value,
-            Order = order
+            Next = next
         };
     }
 }

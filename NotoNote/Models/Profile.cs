@@ -18,6 +18,12 @@ public record Profile(
             transcriptionModel,
             chatModel)
     { }
+
+    public static Profile Default => new Profile(
+        new("Default"),
+        new("あなたは音声の書き起こしを整形するアシスタントです。以下の書き起こしを整理してください\n---"),
+        Constants.AvailableTranscriptionAiModels[0].Id,
+        Constants.AvailableChatAiModels[0].Id);
 }
 
 public record ProfileId(Guid Value) : RecordWithValidation
@@ -33,6 +39,5 @@ public record ProfileName(string Value) : RecordWithValidation
 {
     protected override void Validate()
     {
-        Value.ThrowIfNullOrEmpty();
     }
 }

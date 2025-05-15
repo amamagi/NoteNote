@@ -72,4 +72,12 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
+    private void UpdateProfileRepository()
+    {
+        foreach (var profile in _profilesRepository.GetAll())
+        {
+
+        }
+    }
+
 }

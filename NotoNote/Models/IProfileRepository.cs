@@ -1,9 +1,9 @@
 ﻿namespace NotoNote.Models;
 public interface IProfileRepository
 {
-    void Add(Profile profile);
-    Profile? Get(ProfileId id);
-    IEnumerable<Profile> GetAll();
-    void Update(Profile profile);
-    void Delete(ProfileId id);
+    void AddOrUpdate(Profile profile);
+    void Delete(Guid id);
+    void Swap(Guid id1, Guid id2);
+    Profile? Get(Guid id);
+    List<Profile> GetAll();
 }
