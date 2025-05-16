@@ -4,13 +4,14 @@ using NotoNote.Models;
 namespace NotoNote.DataStore;
 public sealed class ProfileDto
 {
+
     [BsonId]
-    public Guid Id { get; set; }
+    public Guid Id { get; init; }
     public string Name { get; set; } = string.Empty;
     public string SystemPrompt { get; set; } = string.Empty;
     public string TranscriptionAiModelId { get; set; } = string.Empty;
     public string ChatModelId { get; set; } = string.Empty;
-    public Guid Next { get; set; } = 0;
+    public Guid NextId { get; set; }
 }
 
 public static class ProfileExtensions
@@ -24,7 +25,7 @@ public static class ProfileExtensions
             new TranscriptionAiModelId(dto.TranscriptionAiModelId),
             new ChatAiModelId(dto.ChatModelId));
     }
-    public static ProfileDto ToDto(this Profile model, Guid next)
+    public static ProfileDto ToDto(this Profile model, Guid nextId)
     {
         return new ProfileDto
         {
@@ -33,7 +34,7 @@ public static class ProfileExtensions
             SystemPrompt = model.SystemPrompt.Value,
             TranscriptionAiModelId = model.TranscriptionModelId.Value,
             ChatModelId = model.ChatModelId.Value,
-            Next = next
+            NextId = nextId
         };
     }
 }

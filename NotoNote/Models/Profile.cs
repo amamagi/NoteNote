@@ -21,7 +21,7 @@ public record Profile(
 
     public static Profile Default => new Profile(
         new("Default"),
-        new("あなたは音声の書き起こしを整形するアシスタントです。以下の書き起こしを整理してください\n---"),
+        new("あなたは音声の書き起こしを整形するアシスタントです。以下の書き起こしを整形してください\n---"),
         Constants.AvailableTranscriptionAiModels[0].Id,
         Constants.AvailableChatAiModels[0].Id);
 }

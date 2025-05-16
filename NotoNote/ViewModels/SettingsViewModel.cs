@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using NotoNote.Models;
-using System.Diagnostics;
 
 namespace NotoNote.ViewModels;
 
@@ -12,7 +11,7 @@ public partial class SettingsViewModel : ObservableObject
 
     public class Hotkey
     {
-        public char Key { get; set; }
+        public Keys Key { get; set; }
         public bool Shift { get; set; }
         public bool Ctrl { get; set; }
         public bool Alt { get; set; }
@@ -36,12 +35,12 @@ public partial class SettingsViewModel : ObservableObject
 
         _hotkeyActivation = new Hotkey()
         {
-            Key = "a"[0],
+            Key = Keys.S,
             Shift = true
         };
         _hotkeyToggleProfile = new Hotkey()
         {
-            Key = "b"[0],
+            Key = Keys.Tab,
             Shift = false
         };
 
@@ -79,5 +78,27 @@ public partial class SettingsViewModel : ObservableObject
 
         }
     }
+
+    [RelayCommand]
+    private void AddProfile()
+    {
+
+    }
+
+
+    [RelayCommand]
+    private void DeleteProfile()
+    {
+
+
+    }
+
+
+    [RelayCommand]
+    private void MoveProfileToUp() { }
+
+
+    [RelayCommand]
+    private void MoveProfileToDown() { }
 
 }

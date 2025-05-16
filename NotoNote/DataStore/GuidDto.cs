@@ -3,13 +3,13 @@
 namespace NotoNote.DataStore;
 public sealed class GuidDto
 {
-    public GuidDto(string id, Guid guid)
+    public GuidDto(string key, Guid guid)
     {
-        Id = id;
+        Key = key;
         Guid = guid;
     }
 
     [BsonId]
-    public string Id { get; set; } = "";
+    public string Key { get; set; } = "";
     public Guid Guid { get; set; }
 }

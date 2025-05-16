@@ -95,11 +95,11 @@
                                 <ColumnDefinition Width="20"/>
                                 <ColumnDefinition Width="20"/>
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="0" Content="↑" Command="{Binding MoveToUpCommand}" VerticalContentAlignment="Stretch"/>
-                            <Button Grid.Column="1" Content="↓" Command="{Binding MoveToDownCommand}"/>
+                            <Button Grid.Column="0" Content="↑" Command="{Binding MoveProfileToUpCommand}" VerticalContentAlignment="Stretch"/>
+                            <Button Grid.Column="1" Content="↓" Command="{Binding MoveProfileToDownCommand}"/>
                             <Separator Grid.Column="2" Background="Transparent"/>
-                            <Button Grid.Column="3" Content="＋" Command="{Binding AddCommand}"/>
-                            <Button Grid.Column="4" Content="ー" Command="{Binding DeleteCommand}"/>
+                            <Button Grid.Column="3" Content="＋" Command="{Binding AddProfileCommand}"/>
+                            <Button Grid.Column="4" Content="ー" Command="{Binding DeleteProfileCommand}"/>
                         </Grid>
                     </Grid>
 
