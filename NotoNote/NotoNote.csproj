@@ -9,10 +9,15 @@
 		<UseWindowsForms>True</UseWindowsForms>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<UserSecretsId>7b93418a-f738-45bc-ae3c-9840eea223f4</UserSecretsId>
+		<ApplicationIcon>icon.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<None Remove="icon.ico" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="icon.ico" />
 	</ItemGroup>
 
 	<ItemGroup>

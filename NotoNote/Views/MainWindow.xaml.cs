@@ -67,7 +67,7 @@ public partial class MainWindow : Window
 
     public MainWindow(MainScreenView content)
     {
-        SetNotifyIcon();
+        //SetNotifyIcon();
         InitializeComponent();
         MainContent.Content = content;
     }
