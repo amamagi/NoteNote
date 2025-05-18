@@ -20,7 +20,7 @@ public sealed class ProfileRepository : IProfileRepository
         _profiles = dbContext.Profiles;
         _guids = dbContext.Guids;
 
-        // Get or initlialize tail id
+        // Get or initialize tail id
         if (_guids.FindById(TAIL_KEY) == null)
         {
             _guids.Insert(new GuidDto(TAIL_KEY, Guid.NewGuid()));
@@ -30,7 +30,8 @@ public sealed class ProfileRepository : IProfileRepository
         // Seed if empty
         if (_profiles.Count() == 0)
         {
-            var presets = presetProfileProvider.Get();
+            var rawPresets = presetProfileProvider.Get();
+            var presets = rawPresets.DistinctBy(x => x.Id).ToList(); // Remove duplicates
 
             if (presets.Count() == 0)
             {
