@@ -6,6 +6,8 @@
              xmlns:local="clr-namespace:NotoNote.Views"
              xmlns:vm="clr-namespace:NotoNote.ViewModels"
              mc:Ignorable="d" 
+             MinHeight="200"
+             MinWidth="350"
              d:DesignWidth="350"
              d:DesignHeight="200" >
     <UserControl.Resources>
@@ -47,7 +49,7 @@
 
             <!-- ホットキーガイド-->
             <TextBlock Grid.Row="2" Text="{Binding ActivationHotkeyText}"
-                FontStyle="Italic" Foreground="DarkGray"
+                 Foreground="DarkGray"
                 HorizontalAlignment="Center" Margin="0,8"/>
         </Grid>
 
@@ -74,7 +76,7 @@
 
             <!-- ホットキーガイド -->
             <TextBlock Grid.Row="2" Text="{Binding StopRecordingHotkeyText}" 
-                       FontStyle="Italic" Foreground="DarkGray"
+                        Foreground="DarkGray"
                        HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,8"/>
         </Grid>
 
@@ -101,7 +103,7 @@
 
             <!-- ホットキーガイド -->
             <TextBlock Grid.Row="2" Text="Esc: Cancel" 
-                       FontStyle="Italic" Foreground="DarkGray"
+                        Foreground="DarkGray"
                        HorizontalAlignment="Center" Margin="0,8"/>
         </Grid>
 
