@@ -43,8 +43,14 @@ public sealed class ApiKeyRepository : IApiKeyRepository
         _collection.Insert(apiKey.ToDto());
     }
 
-    public void Update(ApiKey apiKey)
+    public void AddOrUpdate(ApiKey apiKey)
     {
+        var existing = Get(apiKey.Provider);
+        if (existing == null)
+        {
+            Set(apiKey);
+            return;
+        }
         _collection.Update(apiKey.ToDto());
     }
 }
