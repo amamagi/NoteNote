@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using NotoNote.Models;
-using System.Collections.Specialized;
 
 namespace NotoNote.ViewModels;
 
@@ -23,9 +22,55 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private Hotkey _hotkeyToggleProfile;
 
     public Keys[] AvailableKeys => Constants.AvailableKeys;
+    public TranscriptionAiModelId[] AvailableTranscriptionAiModels { get; } = Constants.AvailableTranscriptionAiModels.Select(m => m.Id).ToArray();
+    public ChatAiModelId[] AvailableChatAiModels { get; } = Constants.AvailableChatAiModels.Select(m => m.Id).ToArray();
 
     [ObservableProperty] List<Profile> _profiles = [];
     [ObservableProperty] Profile _selectedProfile;
+
+    public string SelectedProfileName
+    {
+        get => SelectedProfile?.Name.Value ?? string.Empty;
+        set
+        {
+            if (SelectedProfile == null) return;
+            var newProfile = SelectedProfile with { Name = new ProfileName(value) };
+            UpdateSelectedProfile(newProfile);
+        }
+    }
+
+    public string SelectedProfileSystemPrompt
+    {
+        get => SelectedProfile?.SystemPrompt.Value ?? string.Empty;
+        set
+        {
+            if (SelectedProfile == null) return;
+            var newProfile = SelectedProfile with { SystemPrompt = new SystemPrompt(value) };
+            UpdateSelectedProfile(newProfile);
+        }
+    }
+
+    public TranscriptionAiModelId SelectedTranscriptionAiModelId
+    {
+        get => SelectedProfile?.TranscriptionModelId ?? Constants.AvailableTranscriptionAiModels[0].Id;
+        set
+        {
+            if (SelectedProfile == null) return;
+            var newProfile = SelectedProfile with { TranscriptionModelId = value };
+            UpdateSelectedProfile(newProfile);
+        }
+    }
+
+    public ChatAiModelId SelectedChatAiModelId
+    {
+        get => SelectedProfile?.ChatModelId ?? Constants.AvailableChatAiModels[0].Id;
+        set
+        {
+            if (SelectedProfile == null) return;
+            var newProfile = SelectedProfile with { ChatModelId = value };
+            UpdateSelectedProfile(newProfile);
+        }
+    }
 
     public SettingsViewModel(IProfileRepository profiles, IApiKeyRepository apiKey)
     {
@@ -49,6 +94,31 @@ public partial class SettingsViewModel : ObservableObject
         _profiles = _profilesRepository.GetAll();
         _selectedProfile = _profiles[0];
     }
+    public void UpdateSelectedProfile(Profile updatedProfile)
+    {
+        _profilesRepository.AddOrUpdate(updatedProfile);
+
+        // リストの該当項目のみ更新
+        var index = Profiles.FindIndex(p => p.Id.Value == updatedProfile.Id.Value);
+        if (index >= 0)
+        {
+            var updatedList = new List<Profile>(Profiles);
+            updatedList[index] = updatedProfile;
+            Profiles = updatedList;
+        }
+
+        SelectedProfile = updatedProfile;
+    }
+
+    // XAMLのバインディングはプロパティのプロパティ変更イベントを拾えないので、
+    // ViewModelに直接値を持ってSelectedProfileの更新にフックさせて変更イベントを拾う
+    partial void OnSelectedProfileChanged(Profile value)
+    {
+        OnPropertyChanged(nameof(SelectedProfileName));
+        OnPropertyChanged(nameof(SelectedProfileSystemPrompt));
+        OnPropertyChanged(nameof(SelectedTranscriptionAiModelId));
+        OnPropertyChanged(nameof(SelectedChatAiModelId));
+    }
 
     partial void OnOpenAiApiKeyChanged(string value)
     {
@@ -59,13 +129,7 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void AddProfile()
     {
-        var newProfile = new Profile(
-            new(Guid.NewGuid()),
-            new("NewProfile"),
-            new(""),
-            Constants.AvailableTranscriptionAiModels[0].Id,
-            Constants.AvailableChatAiModels[0].Id);
-        _profilesRepository.AddOrUpdate(newProfile);
+        _profilesRepository.AddOrUpdate(Profile.Default);
         Profiles = _profilesRepository.GetAll();
         SelectedProfile = Profiles[^1];
     }
@@ -117,4 +181,5 @@ public partial class SettingsViewModel : ObservableObject
         Profiles = _profilesRepository.GetAll();
         SelectedProfile = Profiles[index + 1];
     }
+
 }

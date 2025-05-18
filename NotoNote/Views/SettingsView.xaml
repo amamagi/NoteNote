@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:NotoNote.Views"
+             xmlns:local="clr-namespace:NotoNote.Views" xmlns:viewmodels="clr-namespace:NotoNote.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
              mc:Ignorable="d"
              Width="600"
              MinHeight="600"
@@ -124,27 +124,27 @@
                             </Grid.Resources>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="24"/>
-                                <RowDefinition Height="24"/>
-                                <RowDefinition Height="24"/>
-                                <RowDefinition Height="24"/>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
                                 <RowDefinition Height="*"/>
-                                <RowDefinition Height="24"/>
-                                <RowDefinition Height="24"/>
-                                <RowDefinition Height="24"/>
-                                <RowDefinition Height="24"/>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" Text="Edit" FontWeight="Bold"/>
                             <TextBlock Grid.Row="1" Text="Name"/>
-                            <TextBox Grid.Row="2" Text="{Binding SelectedProfile.Name.Value}"/>
+                            <TextBox Grid.Row="2" Text="{Binding SelectedProfileName, UpdateSourceTrigger=LostFocus, Mode=TwoWay}"/>
                             <TextBlock Grid.Row="3" Text="System Prompt"/>
                             <TextBox Grid.Row="4" MinHeight="64" MaxHeight="500"
-                                     Text="{Binding SelectedProfile.SystemPrompt.Value}"
+                                     Text="{Binding SelectedProfileSystemPrompt}"
                                      TextWrapping="Wrap" AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" />
                             <TextBlock Grid.Row="5" Text="Transcription Model"/>
-                            <ComboBox Grid.Row="6"/>
+                            <ComboBox Grid.Row="6" ItemsSource="{Binding AvailableTranscriptionAiModels}" SelectedItem="{Binding SelectedTranscriptionAiModelId}" DisplayMemberPath="Value"/>
                             <TextBlock Grid.Row="7" Text="Chat Model"/>
-                            <ComboBox Grid.Row="8" />
+                            <ComboBox Grid.Row="8" ItemsSource="{Binding AvailableChatAiModels}" SelectedItem="{Binding SelectedChatAiModelId}" DisplayMemberPath="Value"/>
                         </Grid>
                     </ScrollViewer>
 

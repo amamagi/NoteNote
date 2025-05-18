@@ -55,7 +55,7 @@ public partial class MainScreenViewModel : ObservableObject
     private WaveFilePath? _waveFilePath;
     private CancellationTokenSource _processingCtx = new();
 
-    public IEnumerable<Profile> Profiles => _profiles.GetAll();
+    public List<Profile> Profiles { get; set; }
 
     /// <summary>
     /// ProcessedTextをもち再処理が可能か
@@ -78,6 +78,8 @@ public partial class MainScreenViewModel : ObservableObject
         _chatFactory = chat;
         _window = window;
         _clipboard = clipboard;
+
+        Profiles = _profiles.GetAll();
 
         // TODO: DBからIDを提供して検索
         _selectedProfile = _profiles.GetAll().First();
@@ -121,6 +123,7 @@ public partial class MainScreenViewModel : ObservableObject
             .Permit(Trigger.Cancel, State.Idle);
 
         _machine.Configure(State.Settings)
+            .OnExit(OnExitSettings)
             .Permit(Trigger.ExitSettings, State.Idle);
 
         // _machine.StateをViewフラグに反映
@@ -189,6 +192,15 @@ public partial class MainScreenViewModel : ObservableObject
     {
         _processingCtx?.Cancel();
         _processingCtx?.Dispose();
+    }
+
+    private void OnExitSettings()
+    {
+        Profiles = _profiles.GetAll();
+        // TODO: SelectedProfile ID 保存
+        SelectedProfile = Profiles[0];
+
+        OnPropertyChanged(nameof(Profiles));
     }
 
     private void SetStateFlags(State state)
