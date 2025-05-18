@@ -17,7 +17,7 @@ public partial class SettingsViewModel : ObservableObject
         public bool Alt { get; set; }
     }
 
-    [ObservableProperty] private string _openAiApiKey = string.Empty; // Initialize to avoid nullability issue
+    [ObservableProperty] private string _openAiApiKey = string.Empty;
     [ObservableProperty] private Hotkey _hotkeyActivation;
     [ObservableProperty] private Hotkey _hotkeyToggleProfile;
 
@@ -92,7 +92,8 @@ public partial class SettingsViewModel : ObservableObject
         if (savedOpenAiApiKey != null) OpenAiApiKey = savedOpenAiApiKey.Value;
 
         _profiles = _profilesRepository.GetAll();
-        _selectedProfile = _profiles[0];
+        var activeId = _profilesRepository.GetActiveProfileId();
+        _selectedProfile = _profiles.Find(x => x.Id == activeId) ?? _profiles[0];
     }
     public void UpdateSelectedProfile(Profile updatedProfile)
     {

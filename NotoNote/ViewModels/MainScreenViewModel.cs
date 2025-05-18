@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using NotoNote.DataStore;
 using NotoNote.Models;
 using Stateless;
 using System.IO;
@@ -81,8 +82,8 @@ public partial class MainScreenViewModel : ObservableObject
 
         Profiles = _profiles.GetAll();
 
-        // TODO: DBからIDを提供して検索
-        _selectedProfile = _profiles.GetAll().First();
+        var activeId = _profiles.GetActiveProfileId();
+        _selectedProfile = Profiles.FirstOrDefault(x => x.Id == activeId) ?? Profiles[0];
 
         //_machine = new(State.Idle);
         _machine = new(State.Settings);
@@ -95,6 +96,11 @@ public partial class MainScreenViewModel : ObservableObject
         ActivationHotkeyText = GetHotkeyText(ActivationHotkey) + " : Start recording\n" + GetHotkeyText(ToggleProfileHotkey) + " : Toggle profiles";
         StopRecordingHotkeyText = GetHotkeyText(ActivationHotkey) + " : Stop recording\nESC: Cancel";
         _clipboard = clipboard;
+    }
+
+    partial void OnSelectedProfileChanged(Profile value)
+    {
+        _profiles.SetActiveProfile(value.Id);
     }
 
     private string GetHotkeyText(Hotkey hotkey)
@@ -197,8 +203,8 @@ public partial class MainScreenViewModel : ObservableObject
     private void OnExitSettings()
     {
         Profiles = _profiles.GetAll();
-        // TODO: SelectedProfile ID 保存
-        SelectedProfile = Profiles[0];
+        var activeId = _profiles.GetActiveProfileId();
+        SelectedProfile = Profiles.FirstOrDefault(x => x.Id == activeId) ?? Profiles[0];
 
         OnPropertyChanged(nameof(Profiles));
     }

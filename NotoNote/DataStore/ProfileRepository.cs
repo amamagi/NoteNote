@@ -5,9 +5,9 @@ using NotoNote.Services;
 namespace NotoNote.DataStore;
 public sealed class ProfileRepository : IProfileRepository
 {
-
     private const string HEAD_KEY = "profiles_head";
     private const string TAIL_KEY = "profiles_tail";
+    private const string ACTIVE_KEY = "profile_active";
     private const string INVALID_PROFILE_LINKING = "Invalid profile linking.";
 
     private readonly ILiteCollection<ProfileDto> _profiles;
@@ -223,5 +223,44 @@ public sealed class ProfileRepository : IProfileRepository
         {
             _profiles.Update(profileDto);
         }
+    }
+
+    public ProfileId GetActiveProfileId()
+    {
+        var activeId = _guids.FindById(ACTIVE_KEY);
+
+        // seed
+        if (activeId == null)
+        {
+            activeId = _guids.FindById(HEAD_KEY);
+            _guids.Insert(new GuidDto(ACTIVE_KEY, activeId.Value));
+        }
+
+        // profile deleted
+        if (_profiles.FindById(activeId.Value) == null)
+        {
+            activeId = _guids.FindById(HEAD_KEY);
+            _guids.Update(new GuidDto(ACTIVE_KEY, activeId.Value));
+
+            if (_profiles.FindById(activeId.Value) == null) throw new CollapsedDatabaseException(INVALID_PROFILE_LINKING);
+        }
+
+        return new(activeId.Value);
+    }
+
+    public bool SetActiveProfile(ProfileId id)
+    {
+        if (_profiles.FindById(id.Value) == null) return false;
+
+        if (_guids.FindById(ACTIVE_KEY) == null)
+        {
+            _guids.Insert(new GuidDto(ACTIVE_KEY, id.Value));
+        }
+        else
+        {
+            _guids.Update(new GuidDto(ACTIVE_KEY, id.Value));
+        }
+
+        return true;
     }
 }
