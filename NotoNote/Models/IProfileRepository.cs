@@ -2,8 +2,8 @@
 public interface IProfileRepository
 {
     void AddOrUpdate(Profile profile);
-    void Delete(Guid id);
-    void MoveIndex(Guid id, int count);
-    Profile? Get(Guid id);
+    bool Delete(ProfileId id);
+    void MoveIndex(ProfileId id, int count);
+    Profile? Get(ProfileId id);
     List<Profile> GetAll();
 }

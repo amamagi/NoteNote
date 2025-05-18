@@ -1,4 +1,5 @@
 ﻿using LiteDB;
+using NotoNote.Models;
 using System.IO;
 
 namespace NotoNote.DataStore;
@@ -33,6 +34,12 @@ public sealed class LiteDbContext : ILiteDbContext
             Directory.CreateDirectory(directory);
         }
         _db = new LiteDatabase(dbPath);
+
+
+
+        Profiles.EnsureIndex(x => x.Id);
+        Profiles.EnsureIndex(x => x.NextId);
+        Guids.EnsureIndex(x => x.Key);
     }
 
     public void Dispose()

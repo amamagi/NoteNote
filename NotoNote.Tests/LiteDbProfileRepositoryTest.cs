@@ -36,7 +36,7 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
         // Arrange
         var profile = new Profile(new("TestProfile"), new("TestSystemPrompt\n\n\na"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
         // Act
-        _repository.Add(profile);
+        _repository.AddOrUpdate(profile);
         var retrievedProfile = _repository.Get(profile.Id);
         // Assert
         Assert.NotNull(retrievedProfile);
@@ -48,18 +48,19 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     }
 
     [Fact]
-    public void GetAll_Returns_All_Profiles()
+    public void GetAll_Returns_All_Profiles_In_Added_Order()
     {
         // Arrange
         var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
         var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
-        _repository.Add(profile1);
-        _repository.Add(profile2);
+        _repository.AddOrUpdate(profile1);
+        _repository.AddOrUpdate(profile2);
         // Act
         var allProfiles = _repository.GetAll();
         // Assert
-        Assert.Contains(allProfiles, p => p.Id == profile1.Id);
-        Assert.Contains(allProfiles, p => p.Id == profile2.Id);
+        // 末尾に追加される
+        Assert.Equal(allProfiles[^2].Id, profile1.Id);
+        Assert.Equal(allProfiles[^1].Id, profile2.Id);
     }
 
     [Fact]
@@ -67,10 +68,10 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     {
         // Arrange
         var profile = new Profile(new("TestProfile"), new("TestSystemPrompt\n\n\na"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
-        _repository.Add(profile);
+        _repository.AddOrUpdate(profile);
         profile = profile with { Name = new("UpdatedProfile") };
         // Act
-        _repository.Update(profile);
+        _repository.AddOrUpdate(profile);
         var updatedProfile = _repository.Get(profile.Id);
         // Assert
         Assert.NotNull(updatedProfile);
@@ -82,11 +83,70 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     {
         // Arrange
         var profile = new Profile(new("TestProfile"), new("TestSystemPrompt\n\n\na"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
-        _repository.Add(profile);
+        _repository.AddOrUpdate(profile);
         // Act
         _repository.Delete(profile.Id);
         var deletedProfile = _repository.Get(profile.Id);
         // Assert
         Assert.Null(deletedProfile);
+    }
+
+    [Fact]
+    public void Delete_Reconstruct_Linking()
+    {
+        // Arrange
+        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        var profile3 = new Profile(new("Profile3"), new("SystemPrompt3"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        _repository.AddOrUpdate(profile1);
+        _repository.AddOrUpdate(profile2);
+        _repository.AddOrUpdate(profile3);
+
+        // Act
+        _repository.Delete(profile2.Id);
+        var allProfiles = _repository.GetAll();
+
+        // Assert
+        Assert.Equal(allProfiles[^2].Id, profile1.Id);
+        Assert.Equal(allProfiles[^1].Id, profile3.Id);
+    }
+
+    [Fact]
+    public void Move_Index_Forward_Changes_Profile_Order()
+    {
+        // Arrange
+        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        var profile3 = new Profile(new("Profile3"), new("SystemPrompt3"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        _repository.AddOrUpdate(profile1);
+        _repository.AddOrUpdate(profile2);
+        _repository.AddOrUpdate(profile3);
+        // Act
+        _repository.MoveIndex(profile1.Id, 2);
+        var allProfiles = _repository.GetAll();
+        // Assert
+        Assert.Equal(allProfiles[^3].Id, profile2.Id);
+        Assert.Equal(allProfiles[^2].Id, profile3.Id);
+        Assert.Equal(allProfiles[^1].Id, profile1.Id);
+    }
+
+
+    [Fact]
+    public void Move_Index_Backward_Changes_Profile_Order()
+    {
+        // Arrange
+        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        var profile3 = new Profile(new("Profile3"), new("SystemPrompt3"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        _repository.AddOrUpdate(profile1);
+        _repository.AddOrUpdate(profile2);
+        _repository.AddOrUpdate(profile3);
+        // Act
+        _repository.MoveIndex(profile3.Id, -2);
+        var allProfiles = _repository.GetAll();
+        // Assert
+        Assert.Equal(allProfiles[^3].Id, profile3.Id);
+        Assert.Equal(allProfiles[^2].Id, profile1.Id);
+        Assert.Equal(allProfiles[^1].Id, profile2.Id);
     }
 }
