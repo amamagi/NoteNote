@@ -48,6 +48,8 @@ public partial class MainScreenViewModel : ObservableObject
     [ObservableProperty] private string _processedText = "";
     [ObservableProperty] private string _activationHotkeyText = "";
     [ObservableProperty] private string _stopRecordingHotkeyText = "";
+    [ObservableProperty] private string _recordingMessage = "Recording...";
+    [ObservableProperty] private bool _enableRecordingAnimation = true;
 
     private ITranscriptionAiService? _transcriptionAiService;
     private IChatAiService? _chatAiService;
@@ -147,11 +149,13 @@ public partial class MainScreenViewModel : ObservableObject
         _transcriptText = null;
         _waveFilePath = null;
         ProcessedText = "";
+        RecordingMessage = "Recording...";
+        EnableRecordingAnimation = true;
     }
 
     private void OnEntryRecording()
     {
-        _audio.StartRecording();
+        _audio.StartRecording(SetRecordingTimeout);
         Reset();
     }
 
@@ -268,6 +272,12 @@ public partial class MainScreenViewModel : ObservableObject
             default:
                 break;
         }
+    }
+
+    private void SetRecordingTimeout()
+    {
+        RecordingMessage = "Recording paused (timeout)";
+        EnableRecordingAnimation = false;
     }
 
     [RelayCommand]

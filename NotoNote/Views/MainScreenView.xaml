@@ -65,13 +65,13 @@
             <StackPanel Orientation="Horizontal" Margin="8">
                 <TextBlock Text="Profile:" VerticalAlignment="Center"/>
                 <ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" Width="150" Margin="4,0" DisplayMemberPath="Name.Value" IsEnabled="False"/>
-                <Button Content="Settings" Command="{Binding EnterSettingsCommand}" Margin="16,0" IsEnabled="False"/>
+                <Button Content="Settings" Command="{Binding EnterSettingsCommand}" Margin="8,0" IsEnabled="False"/>
             </StackPanel>
 
             <!-- 録音アニメーション -->
             <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <ProgressBar Width="200" Height="20" IsIndeterminate="True"/>
-                <TextBlock Text="Recording..." Margin="0,8,0,0" FontSize="16"/>
+                <ProgressBar Width="200" Height="20" IsIndeterminate="{Binding EnableRecordingAnimation}"/>
+                <TextBlock Text="{Binding RecordingMessage}" Margin="0,8,0,0" FontSize="16"/>
             </StackPanel>
 
             <!-- ホットキーガイド -->
@@ -92,7 +92,7 @@
             <StackPanel Orientation="Horizontal" Margin="8">
                 <TextBlock Text="Profile:" VerticalAlignment="Center"/>
                 <ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" Width="150" Margin="4,0" DisplayMemberPath="Name.Value" IsEnabled="False"/>
-                <Button Content="Settings" Command="{Binding EnterSettingsCommand}" Margin="16,0" IsEnabled="False"/>
+                <Button Content="Settings" Command="{Binding EnterSettingsCommand}" Margin="8,0" IsEnabled="False"/>
             </StackPanel>
 
             <!-- 処理アニメーション -->
