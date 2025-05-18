@@ -2,8 +2,11 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:NotoNote.Views" xmlns:viewmodels="clr-namespace:NotoNote.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
+             xmlns:local="clr-namespace:NotoNote.Views"
+             xmlns:viewmodels="clr-namespace:NotoNote.ViewModels" 
+             d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
              mc:Ignorable="d"
              Width="600"
              MinHeight="600"
@@ -126,9 +129,9 @@
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" Text="Edit" FontWeight="Bold"/>
                             <TextBlock Grid.Row="1" Text="Name"/>
-                            <TextBox Grid.Row="2" Text="{Binding SelectedProfileName, UpdateSourceTrigger=LostFocus, Mode=TwoWay}"/>
+                            <emoji:TextBox Grid.Row="2" Text="{Binding SelectedProfileName, UpdateSourceTrigger=LostFocus, Mode=TwoWay}"/>
                             <TextBlock Grid.Row="3" Text="System Prompt"/>
-                            <TextBox Grid.Row="4" MinHeight="64" MaxHeight="500"
+                            <emoji:TextBox Grid.Row="4" MinHeight="64" MaxHeight="500"
                                      Text="{Binding SelectedProfileSystemPrompt}"
                                      TextWrapping="Wrap" AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" />
