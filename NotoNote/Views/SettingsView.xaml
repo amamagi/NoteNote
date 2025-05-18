@@ -17,50 +17,41 @@
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="8">
                         <!-- API KEY -->
-                        <TextBlock Text="API Key: OpenAI" FontWeight="Bold" TextWrapping="WrapWithOverflow"/>
-                        <TextBox Margin="0,8,0,0" Text="{Binding OpenAiApiKey}"/>
+                        <TextBlock Text="API Key" FontWeight="Bold" TextWrapping="WrapWithOverflow"/>
+                        <TextBlock Text="OpenAI API Key" TextWrapping="WrapWithOverflow"/>
+                        <TextBox Text="{Binding OpenAiApiKey}" Margin="0,4,0,0"/>
 
-                        <!-- HOTKEY 1-->
-                        <TextBlock Text="Hotkey: Activation" FontWeight="Bold" Margin="0,8,0,0"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,4">
-                            <StackPanel.Resources>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                </Style>
-                                <Style TargetType="CheckBox">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                </Style>
-                            </StackPanel.Resources>
-                            <TextBlock Text="Shift: "/>
-                            <CheckBox IsChecked="{Binding HotkeyActivation.Shift}"/>
-                            <TextBlock Text="Ctrl: " Margin="4,0,0,0"/>
-                            <CheckBox IsChecked="{Binding HotkeyActivation.Ctrl}"/>
-                            <TextBlock Text="Alt: " Margin="4,0,0,0" />
-                            <CheckBox IsChecked="{Binding HotkeyActivation.Alt}"/>
-                            <TextBlock Text="Key: " Margin="4,0,0,0" />
-                            <ComboBox ItemsSource="{Binding AvailableKeys}" Height="20" />
-                        </StackPanel>
+                        <!-- Hotkey -->
+                        <TextBlock Text="Hotkey" FontWeight="Bold" FontSize="14" TextWrapping="WrapWithOverflow" Margin="0,8,0,0"/>
 
-                        <!-- HOTKEY 2 -->
-                        <TextBlock Text="Hotkey: Toggle profiles" FontWeight="Bold" Margin="0,8,0,0"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,4" Height="30">
-                            <StackPanel.Resources>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto"/>
+                                <RowDefinition Height="auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.Resources>
                                 <Style TargetType="TextBlock">
+                                    <Setter Property="Margin" Value="0,4,0,0"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                 </Style>
-                                <Style TargetType="CheckBox">
+                                <Style TargetType="TextBox">
+                                    <Setter Property="Margin" Value="0,4,0,0"/>
                                     <Setter Property="VerticalAlignment" Value="Center"/>
                                 </Style>
-                            </StackPanel.Resources>
-                            <TextBlock Text="Shift: "/>
-                            <CheckBox IsChecked="{Binding HotkeyToggleProfile.Shift}"/>
-                            <TextBlock Text="Ctrl: " Margin="4,0,0,0"/>
-                            <CheckBox IsChecked="{Binding HotkeyToggleProfile.Ctrl}"/>
-                            <TextBlock Text="Alt: " Margin="4,0,0,0" />
-                            <CheckBox IsChecked="{Binding HotkeyToggleProfile.Alt}"/>
-                            <TextBlock Text="Key: " Margin="4,0,0,0" />
-                            <ComboBox ItemsSource="{Binding AvailableKeys}" Height="20" />
-                        </StackPanel>
+                            </Grid.Resources>
+                            <TextBlock Grid.Column="0" Grid.Row="0" Text="Activation" />
+                            <TextBox Grid.Column="1" Grid.Row="0" MinWidth="100" Text="{Binding HotkeyActivationText, Mode=OneWay}"
+                                     PreviewKeyDown="HotkeyTextBox_PreviewKeyDown" Tag="Activation"
+                                     HorizontalAlignment="Left"/>
+                            <TextBlock Grid.Column="0" Grid.Row="1" Text="Toggle Profile" />
+                            <TextBox Grid.Column="1" Grid.Row="1" MinWidth="100" Text="{Binding HotkeyToggleProfileText, Mode=OneWay}"
+                                     PreviewKeyDown="HotkeyTextBox_PreviewKeyDown" Tag="ToggleProfile"
+                                     HorizontalAlignment="Left"/>
+                        </Grid>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

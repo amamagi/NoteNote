@@ -1,6 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using NotoNote.Models;
+using System.Windows;
+using System.Windows.Input;
+using MessageBox = System.Windows.MessageBox;
 
 namespace NotoNote.ViewModels;
 
@@ -8,26 +11,31 @@ public partial class SettingsViewModel : ObservableObject
 {
     private readonly IProfileRepository _profilesRepository;
     private readonly IApiKeyRepository _apiKeyRepository;
-
-    public class Hotkey
+    private readonly IHotkeyRepository _hotkeyRepository;
+    private readonly Dictionary<HotkeyPurpose, string> _hotkeyText = new()
     {
-        public Keys Key { get; set; }
-        public bool Shift { get; set; }
-        public bool Ctrl { get; set; }
-        public bool Alt { get; set; }
-    }
+        { HotkeyPurpose.Activation, ""},
+        { HotkeyPurpose.ToggleProfile, ""}
+    };
 
-    [ObservableProperty] private string _openAiApiKey = string.Empty;
-    [ObservableProperty] private Hotkey _hotkeyActivation;
-    [ObservableProperty] private Hotkey _hotkeyToggleProfile;
+    private readonly Dictionary<HotkeyPurpose, string> _hotkeyTextProperty = new()
+    {
+        { HotkeyPurpose.Activation, nameof(HotkeyActivationText) },
+        { HotkeyPurpose.ToggleProfile, nameof(HotkeyToggleProfileText) }
+    };
 
-    public Keys[] AvailableKeys => Constants.AvailableKeys;
+    [ObservableProperty]
+    private string _openAiApiKey = string.Empty;
+
+    public static Keys[] AvailableKeys => Constants.AvailableKeys;
     public TranscriptionAiModelId[] AvailableTranscriptionAiModels { get; } = Constants.AvailableTranscriptionAiModels.Select(m => m.Id).ToArray();
     public ChatAiModelId[] AvailableChatAiModels { get; } = Constants.AvailableChatAiModels.Select(m => m.Id).ToArray();
 
     [ObservableProperty] List<Profile> _profiles = [];
     [ObservableProperty] Profile _selectedProfile;
 
+    public string HotkeyActivationText => _hotkeyText[HotkeyPurpose.Activation];
+    public string HotkeyToggleProfileText => _hotkeyText[HotkeyPurpose.ToggleProfile];
     public string SelectedProfileName
     {
         get => SelectedProfile?.Name.Value ?? string.Empty;
@@ -72,28 +80,32 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    public SettingsViewModel(IProfileRepository profiles, IApiKeyRepository apiKey)
+    public Dictionary<HotkeyPurpose, string> HotkeyTextProperty => _hotkeyTextProperty;
+
+    public SettingsViewModel(IProfileRepository profiles, IApiKeyRepository apiKey, IHotkeyRepository hotkeyRepository)
     {
         _profilesRepository = profiles;
         _apiKeyRepository = apiKey;
+        _hotkeyRepository = hotkeyRepository;
 
-        _hotkeyActivation = new Hotkey()
-        {
-            Key = Keys.S,
-            Shift = true
-        };
-        _hotkeyToggleProfile = new Hotkey()
-        {
-            Key = Keys.Tab,
-            Shift = false
-        };
-
+        // API Key
         var savedOpenAiApiKey = _apiKeyRepository.Get(ApiProvider.OpenAI);
         if (savedOpenAiApiKey != null) OpenAiApiKey = savedOpenAiApiKey.Value;
 
+        // Profile
         _profiles = _profilesRepository.GetAll();
         var activeId = _profilesRepository.GetActiveProfileId();
         _selectedProfile = _profiles.Find(x => x.Id == activeId) ?? _profiles[0];
+
+        // Hotkey
+        if (_hotkeyRepository.Get(HotkeyPurpose.Activation) is { } activationHotkey)
+        {
+            UpdateHotkeyText(HotkeyPurpose.Activation, activationHotkey);
+        }
+        if (_hotkeyRepository.Get(HotkeyPurpose.ToggleProfile) is { } toggleHotkey)
+        {
+            UpdateHotkeyText(HotkeyPurpose.ToggleProfile, toggleHotkey);
+        }
     }
     public void UpdateSelectedProfile(Profile updatedProfile)
     {
@@ -103,9 +115,8 @@ public partial class SettingsViewModel : ObservableObject
         var index = Profiles.FindIndex(p => p.Id.Value == updatedProfile.Id.Value);
         if (index >= 0)
         {
-            var updatedList = new List<Profile>(Profiles);
-            updatedList[index] = updatedProfile;
-            Profiles = updatedList;
+            Profiles[index] = updatedProfile;
+            OnPropertyChanged(nameof(Profiles));
         }
 
         SelectedProfile = updatedProfile;
@@ -134,7 +145,6 @@ public partial class SettingsViewModel : ObservableObject
         Profiles = _profilesRepository.GetAll();
         SelectedProfile = Profiles[^1];
     }
-
 
     [RelayCommand]
     private void DeleteProfile()
@@ -183,4 +193,36 @@ public partial class SettingsViewModel : ObservableObject
         SelectedProfile = Profiles[index + 1];
     }
 
+    public void UpdateHotkey(HotkeyPurpose purpose, Key key, bool isShiftPressed, bool isCtrlPressed, bool isAltPressed)
+    {
+        var modifiers = Keys.None;
+        if (isShiftPressed) modifiers |= Keys.Shift;
+        if (isCtrlPressed) modifiers |= Keys.Control;
+        if (isAltPressed) modifiers |= Keys.Alt;
+        var virtualKey = (Keys)KeyInterop.VirtualKeyFromKey(key);
+        if (virtualKey == Keys.None) return;
+        if (modifiers == Keys.None) return; // No modifiers, no hotkey
+        var hotkey = new Hotkey(virtualKey, modifiers);
+
+        // Validate the hotkey
+        var allHotkeys = _hotkeyRepository.GetAll();
+        foreach (var existingHotkey in allHotkeys)
+        {
+            if (existingHotkey.Key != purpose && existingHotkey.Value == hotkey)
+            {
+                // Show a message to the user about the conflict
+                MessageBox.Show("This hotkey is already in use. Please choose a different one.", "Hotkey Conflict", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+        }
+
+        _hotkeyRepository.Update(purpose, hotkey);
+        UpdateHotkeyText(purpose, hotkey);
+    }
+
+    public void UpdateHotkeyText(HotkeyPurpose purpose, Hotkey hotkey)
+    {
+        _hotkeyText[purpose] = hotkey.Modifiers.ToString().Replace(", ", "+") + "+" + hotkey.Key.ToString();
+        OnPropertyChanged(_hotkeyTextProperty[purpose]);
+    }
 }

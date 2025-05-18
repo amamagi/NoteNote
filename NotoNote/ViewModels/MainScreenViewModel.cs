@@ -4,6 +4,7 @@ using NotoNote.DataStore;
 using NotoNote.Models;
 using Stateless;
 using System.IO;
+using System.Security.Cryptography;
 
 namespace NotoNote.ViewModels;
 public partial class MainScreenViewModel : ObservableObject
@@ -27,14 +28,15 @@ public partial class MainScreenViewModel : ObservableObject
         ExitSettings,
     }
 
-    private readonly Hotkey ActivationHotkey = new(Keys.Space, Keys.Shift | Keys.Control);
-    private readonly Hotkey ToggleProfileHotkey = new(Keys.S, Keys.Shift | Keys.Control);
+    private Hotkey? _activationHotkey;
+    private Hotkey? _toggleProfileHotkey;
     private readonly Hotkey CancelHotkey = new(Keys.Escape, Keys.None);
 
     private readonly IClipBoardService _clipboard;
     private readonly IWindowService _window;
     private readonly IHotkeyService _hotKey;
-    private readonly IProfileRepository _profiles;
+    private readonly IProfileRepository _profilesRepo;
+    private readonly IHotkeyRepository _hotkeyRepo;
     private readonly IAudioService _audio;
     private readonly ITranscriptionAiServiceFactory _transcriptionFactory;
     private readonly IChatAiServiceFactory _chatFactory;
@@ -72,42 +74,35 @@ public partial class MainScreenViewModel : ObservableObject
         ITranscriptionAiServiceFactory transcription,
         IChatAiServiceFactory chat,
         IWindowService window,
-        IClipBoardService clipboard)
+        IClipBoardService clipboard,
+        IHotkeyRepository hotkeyRepo)
     {
+        // initialize fields
         _hotKey = hotKey;
-        _profiles = profiles;
+        _profilesRepo = profiles;
         _audio = audio;
         _transcriptionFactory = transcription;
         _chatFactory = chat;
         _window = window;
         _clipboard = clipboard;
+        _hotkeyRepo = hotkeyRepo;
 
-        Profiles = _profiles.GetAll();
-
-        var activeId = _profiles.GetActiveProfileId();
+        // Set profiles
+        Profiles = _profilesRepo.GetAll();
+        var activeId = _profilesRepo.GetActiveProfileId();
         _selectedProfile = Profiles.FirstOrDefault(x => x.Id == activeId) ?? Profiles[0];
 
-        //_machine = new(State.Idle);
-        _machine = new(State.Settings);
+        // Setup state machine
+        _machine = new(State.Idle);
+        //_machine = new(State.Settings);
         ConfigureStateMachine();
 
-        _hotKey.RegisterHotkey(ActivationHotkey, HandleActivationHotkey);
-        _hotKey.RegisterHotkey(CancelHotkey, HandleCancelHotkey);
-        _hotKey.RegisterHotkey(ToggleProfileHotkey, HandleProfileToggleHotkey);
-
-        ActivationHotkeyText = GetHotkeyText(ActivationHotkey) + " : Start recording\n" + GetHotkeyText(ToggleProfileHotkey) + " : Toggle profiles";
-        StopRecordingHotkeyText = GetHotkeyText(ActivationHotkey) + " : Stop recording\nESC: Cancel";
-        _clipboard = clipboard;
+        SetupHotkey();
     }
 
     partial void OnSelectedProfileChanged(Profile value)
     {
-        _profiles.SetActiveProfile(value.Id);
-    }
-
-    private string GetHotkeyText(Hotkey hotkey)
-    {
-        return hotkey.Modifiers.ToString().Replace(", ", "+") + "+" + hotkey.Key.ToString();
+        _profilesRepo.SetActiveProfile(value.Id);
     }
 
     private void ConfigureStateMachine()
@@ -131,6 +126,7 @@ public partial class MainScreenViewModel : ObservableObject
             .Permit(Trigger.Cancel, State.Idle);
 
         _machine.Configure(State.Settings)
+            .OnEntry(OnEntrySettings)
             .OnExit(OnExitSettings)
             .Permit(Trigger.ExitSettings, State.Idle);
 
@@ -143,16 +139,6 @@ public partial class MainScreenViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(HasProcessedText));
     }
-
-    private void Reset()
-    {
-        _transcriptText = null;
-        _waveFilePath = null;
-        ProcessedText = "";
-        RecordingMessage = "Recording...";
-        EnableRecordingAnimation = true;
-    }
-
     private void OnEntryRecording()
     {
         _audio.StartRecording(SetRecordingTimeout);
@@ -204,11 +190,21 @@ public partial class MainScreenViewModel : ObservableObject
         _processingCtx?.Dispose();
     }
 
+    private void OnEntrySettings()
+    {
+        // 設定画面で実際にキーコンビネーションを入力して設定する際に干渉するので、Hotkeyを無効化する
+        _hotKey.UnregisterAllHotkeys();
+    }
+
     private void OnExitSettings()
     {
-        Profiles = _profiles.GetAll();
-        var activeId = _profiles.GetActiveProfileId();
-        SelectedProfile = Profiles.FirstOrDefault(x => x.Id == activeId) ?? Profiles[0];
+        // Profile
+        Profiles = _profilesRepo.GetAll();
+        var activeId = _profilesRepo.GetActiveProfileId();
+        SelectedProfile = Profiles.First(x => x.Id == activeId);
+
+        // Hotkey
+        SetupHotkey();
 
         OnPropertyChanged(nameof(Profiles));
     }
@@ -272,6 +268,34 @@ public partial class MainScreenViewModel : ObservableObject
             default:
                 break;
         }
+    }
+    private void SetupHotkey()
+    {
+        _hotKey.UnregisterAllHotkeys();
+
+        // Register hotkeys
+        var activationHotkey = _hotkeyRepo.Get(HotkeyPurpose.Activation) ?? new Hotkey(Keys.S, Keys.Shift);
+        var toggleProfileHotkey = _hotkeyRepo.Get(HotkeyPurpose.ToggleProfile) ?? new Hotkey(Keys.Tab, Keys.None);
+        _hotKey.RegisterHotkey(activationHotkey, HandleActivationHotkey);
+        _hotKey.RegisterHotkey(CancelHotkey, HandleCancelHotkey);
+        _hotKey.RegisterHotkey(toggleProfileHotkey, HandleProfileToggleHotkey);
+
+        ActivationHotkeyText = GetHotkeyText(activationHotkey) + " : Start recording\n" + GetHotkeyText(toggleProfileHotkey) + " : Toggle profiles";
+        StopRecordingHotkeyText = GetHotkeyText(activationHotkey) + " : Stop recording\nESC: Cancel";
+    }
+
+    private string GetHotkeyText(Hotkey hotkey)
+    {
+        return hotkey.Modifiers.ToString().Replace(", ", "+") + "+" + hotkey.Key.ToString();
+    }
+
+    private void Reset()
+    {
+        _transcriptText = null;
+        _waveFilePath = null;
+        ProcessedText = "";
+        RecordingMessage = "Recording...";
+        EnableRecordingAnimation = true;
     }
 
     private void SetRecordingTimeout()

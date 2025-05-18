@@ -7,4 +7,5 @@ public interface IHotkeyService
     /// </summary>
     public void RegisterHotkey(Hotkey hotkey, Action callback);
     public void UnregisterHotkey(Hotkey hotkey);
+    public void UnregisterAllHotkeys();
 }

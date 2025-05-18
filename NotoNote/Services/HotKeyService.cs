@@ -6,8 +6,8 @@ namespace NotoNote.Services;
 public sealed class HotkeyService : IHotkeyService, IDisposable
 {
     private readonly Dictionary<Hotkey, Action> _hotkeyCallbacks = [];
-    private IKeyboardInterceptor? _interceptor;
-    private Dispatcher _uiDispatcher;
+    private readonly IKeyboardInterceptor _interceptor;
+    private readonly Dispatcher _uiDispatcher;
 
     public HotkeyService(Dispatcher uiDispatcher)
     {
@@ -30,6 +30,11 @@ public sealed class HotkeyService : IHotkeyService, IDisposable
     public void UnregisterHotkey(Hotkey hotkey)
     {
         _hotkeyCallbacks.Remove(hotkey);
+    }
+
+    public void UnregisterAllHotkeys()
+    {
+        _hotkeyCallbacks.Clear();
     }
 
     private void InterceptorOnKeyDown(object? sender, KeyEventArgs args)

@@ -33,6 +33,7 @@ public partial class App : Application
                 services.AddSingleton<IApiKeyRepository, ApiKeyRepository>();
                 services.AddSingleton<IPresetProfileProvider, PresetProfileProvider>();
                 services.AddSingleton<IProfileRepository, ProfileRepository>();
+                services.AddSingleton<IHotkeyRepository, HotkeyRepository>();
 
                 // Services
                 services.AddSingleton<IWindowService, WindowService>();

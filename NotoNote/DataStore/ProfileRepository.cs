@@ -229,14 +229,14 @@ public sealed class ProfileRepository : IProfileRepository
     {
         var activeId = _guids.FindById(ACTIVE_KEY);
 
-        // seed
+        // seed if empty
         if (activeId == null)
         {
             activeId = _guids.FindById(HEAD_KEY);
             _guids.Insert(new GuidDto(ACTIVE_KEY, activeId.Value));
         }
 
-        // profile deleted
+        // use head if activeId is invalid
         if (_profiles.FindById(activeId.Value) == null)
         {
             activeId = _guids.FindById(HEAD_KEY);

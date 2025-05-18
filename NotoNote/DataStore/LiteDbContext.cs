@@ -10,6 +10,7 @@ public interface ILiteDbContext : IDisposable
     ILiteCollection<DbMetadataDto> Metadata { get; }
     ILiteCollection<ApiKeyDto> ApiKeys { get; }
     ILiteCollection<GuidDto> Guids { get; }
+    ILiteCollection<HotkeyDto> Hotkeys { get; }
 }
 
 public sealed class LiteDbContext : ILiteDbContext
@@ -18,6 +19,7 @@ public sealed class LiteDbContext : ILiteDbContext
     public ILiteCollection<DbMetadataDto> Metadata => _db.GetCollection<DbMetadataDto>("metadata");
     public ILiteCollection<ApiKeyDto> ApiKeys => _db.GetCollection<ApiKeyDto>("api_keys");
     public ILiteCollection<GuidDto> Guids => _db.GetCollection<GuidDto>("guids");
+    public ILiteCollection<HotkeyDto> Hotkeys => _db.GetCollection<HotkeyDto>("hotkeys");
 
     private static readonly string DefaultPath = Path.Combine(
         Path.GetDirectoryName(Application.ExecutablePath)!,
@@ -40,6 +42,7 @@ public sealed class LiteDbContext : ILiteDbContext
         Profiles.EnsureIndex(x => x.Id);
         Profiles.EnsureIndex(x => x.NextId);
         Guids.EnsureIndex(x => x.Key);
+        Hotkeys.EnsureIndex(x => x.Id);
     }
 
     public void Dispose()

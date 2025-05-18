@@ -1,13 +1,28 @@
 ﻿using LiteDB;
+using NotoNote.Models;
 
 namespace NotoNote.DataStore;
 public sealed class HotkeyDto
 {
     [BsonId]
-    public string HotkeyId { get; set; } = "";
-    public string Key { get; set; } = "";
-    public string Shift { get; set; } = "";
-    public bool Ctrl { get; set; }
-    public bool Alt { get; set; }
+    public int Id { get; set; }
+    public Keys Key { get; set; }
+    public Keys Modifiers { get; set; }
+}
 
+public static class HotkeyDtoExtensions
+{
+    public static Hotkey ToModel(this HotkeyDto dto)
+    {
+        return new Hotkey(dto.Key, dto.Modifiers);
+    }
+    public static HotkeyDto ToDto(this Hotkey hotkey, HotkeyPurpose purpose)
+    {
+        return new HotkeyDto()
+        {
+            Id = (int)purpose,
+            Key = hotkey.Key,
+            Modifiers = hotkey.Modifiers
+        };
+    }
 }
