@@ -166,7 +166,6 @@ public partial class MainScreenViewModel : ObservableObject
                 _transcriptText = await _transcriptionAiService.TranscribeAsync(_waveFilePath);
             }
 
-            // DEBUG TEXT
             var chatResponseText = await _chatAiService.CompleteChatAsync(SelectedProfile.SystemPrompt, _transcriptText, ct);
 
             ProcessedText = chatResponseText.Value;
