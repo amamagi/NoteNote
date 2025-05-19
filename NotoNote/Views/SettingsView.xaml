@@ -9,7 +9,7 @@
              d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
              mc:Ignorable="d"
              Width="600"
-             MinHeight="600"
+             MaxHeight="600"
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid Margin="8,8,8,0" MaxWidth="600">
         <TabControl>
@@ -131,7 +131,7 @@
                             <TextBlock Grid.Row="1" Text="Name"/>
                             <emoji:TextBox Grid.Row="2" Text="{Binding SelectedProfileName, UpdateSourceTrigger=LostFocus, Mode=TwoWay}"/>
                             <TextBlock Grid.Row="3" Text="System Prompt"/>
-                            <emoji:TextBox Grid.Row="4" MinHeight="64" MaxHeight="500"
+                            <emoji:TextBox Grid.Row="4" MinHeight="200"
                                      Text="{Binding SelectedProfileSystemPrompt}"
                                      TextWrapping="Wrap" AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" />

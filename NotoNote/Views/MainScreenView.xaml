@@ -39,7 +39,7 @@
             <!-- 結果表示 -->
             <Grid Visibility="{Binding HasProcessedText, Converter={StaticResource BoolToVis}}"
                         Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                        Margin="16, 8">
+                        Margin="4">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="auto"/>
@@ -47,13 +47,18 @@
                 <emoji:TextBox Grid.Row="0" Text="{Binding ProcessedText}"  
                          IsReadOnly="True" TextWrapping="Wrap"
                          VerticalScrollBarVisibility="Auto"/>
-                <Button Grid.Row="1" Content="Reprocess" Command="{Binding RetryCommand}" Width="100" Margin="0,8,0,0"/>
             </Grid>
 
             <!-- ホットキーガイド-->
             <TextBlock Grid.Row="2" Text="{Binding ActivationHotkeyText}"
                  Foreground="DarkGray"
                 HorizontalAlignment="Center" Margin="0,8"/>
+
+            <!-- 再生成ボタン -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8" 
+                        Visibility="{Binding HasProcessedText, Converter={StaticResource BoolToVis}}">
+                <Button Content="Regenerate" Command="{Binding RetryCommand}" Width="80"/>
+            </StackPanel>
         </Grid>
 
         <!-- 録音画面 -->
