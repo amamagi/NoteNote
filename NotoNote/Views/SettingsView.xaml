@@ -74,7 +74,12 @@
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="22"/>
                         </Grid.RowDefinitions>
-                        <ListBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" SelectionMode="Single" Grid.Row="0" Margin="1" DisplayMemberPath="Name.Value">
+                        <ListBox ItemsSource="{Binding Profiles}" 
+                                 SelectedValue="{Binding SelectedProfile, Mode=TwoWay}" 
+                                 SelectionMode="Single" 
+                                 Grid.Row="0" 
+                                 Margin="1" 
+                                 DisplayMemberPath="Name.Value">
                         </ListBox>
 
                         <Grid Grid.Row="1" Height="20">
@@ -129,10 +134,10 @@
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" Text="Edit" FontWeight="Bold"/>
                             <TextBlock Grid.Row="1" Text="Name"/>
-                            <emoji:TextBox Grid.Row="2" Text="{Binding SelectedProfileName, UpdateSourceTrigger=LostFocus, Mode=TwoWay}"/>
+                            <TextBox Grid.Row="2" Text="{Binding SelectedProfileName, UpdateSourceTrigger=LostFocus, Mode=TwoWay}"/>
                             <TextBlock Grid.Row="3" Text="System Prompt"/>
-                            <emoji:TextBox Grid.Row="4" MinHeight="200"
-                                     Text="{Binding SelectedProfileSystemPrompt}"
+                            <TextBox Grid.Row="4" MinHeight="200"
+                                     Text="{Binding SelectedProfileSystemPrompt, UpdateSourceTrigger=LostFocus, Mode=TwoWay}"
                                      TextWrapping="Wrap" AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" />
                             <TextBlock Grid.Row="5" Text="Transcription Model"/>

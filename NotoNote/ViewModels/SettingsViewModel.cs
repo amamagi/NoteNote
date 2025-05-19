@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using NotoNote.Models;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 using MessageBox = System.Windows.MessageBox;
@@ -24,18 +25,17 @@ public partial class SettingsViewModel : ObservableObject
         { HotkeyPurpose.ToggleProfile, nameof(HotkeyToggleProfileText) }
     };
 
-    [ObservableProperty]
-    private string _openAiApiKey = string.Empty;
+    [ObservableProperty] private Profile _selectedProfile;
+    [ObservableProperty] private string _openAiApiKey = string.Empty;
+    [ObservableProperty] private ObservableCollection<Profile> _profiles;
 
     public static Keys[] AvailableKeys => Constants.AvailableKeys;
     public TranscriptionAiModelId[] AvailableTranscriptionAiModels { get; } = Constants.AvailableTranscriptionAiModels.Select(m => m.Id).ToArray();
     public ChatAiModelId[] AvailableChatAiModels { get; } = Constants.AvailableChatAiModels.Select(m => m.Id).ToArray();
 
-    [ObservableProperty] List<Profile> _profiles = [];
-    [ObservableProperty] Profile _selectedProfile;
-
     public string HotkeyActivationText => _hotkeyText[HotkeyPurpose.Activation];
     public string HotkeyToggleProfileText => _hotkeyText[HotkeyPurpose.ToggleProfile];
+
     public string SelectedProfileName
     {
         get => SelectedProfile?.Name.Value ?? string.Empty;
@@ -43,7 +43,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             if (SelectedProfile == null) return;
             var newProfile = SelectedProfile with { Name = new ProfileName(value) };
-            UpdateSelectedProfile(newProfile);
+            UpdateProfiles(newProfile);
         }
     }
 
@@ -54,7 +54,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             if (SelectedProfile == null) return;
             var newProfile = SelectedProfile with { SystemPrompt = new SystemPrompt(value) };
-            UpdateSelectedProfile(newProfile);
+            UpdateProfiles(newProfile);
         }
     }
 
@@ -65,7 +65,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             if (SelectedProfile == null) return;
             var newProfile = SelectedProfile with { TranscriptionModelId = value };
-            UpdateSelectedProfile(newProfile);
+            UpdateProfiles(newProfile);
         }
     }
 
@@ -76,7 +76,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             if (SelectedProfile == null) return;
             var newProfile = SelectedProfile with { ChatModelId = value };
-            UpdateSelectedProfile(newProfile);
+            UpdateProfiles(newProfile);
         }
     }
 
@@ -93,9 +93,9 @@ public partial class SettingsViewModel : ObservableObject
         if (savedOpenAiApiKey != null) OpenAiApiKey = savedOpenAiApiKey.Value;
 
         // Profile
-        _profiles = _profilesRepository.GetAll();
         var activeId = _profilesRepository.GetActiveProfileId();
-        _selectedProfile = _profiles.Find(x => x.Id == activeId) ?? _profiles[0];
+        _selectedProfile = _profilesRepository.Get(activeId) ?? _profilesRepository.GetAll().First();
+        Profiles = new ObservableCollection<Profile>(_profilesRepository.GetAll());
 
         // Hotkey
         if (_hotkeyRepository.Get(HotkeyPurpose.Activation) is { } activationHotkey)
@@ -107,16 +107,21 @@ public partial class SettingsViewModel : ObservableObject
             UpdateHotkeyText(HotkeyPurpose.ToggleProfile, toggleHotkey);
         }
     }
-    public void UpdateSelectedProfile(Profile updatedProfile)
+
+    public void UpdateProfiles(Profile updatedProfile)
     {
         _profilesRepository.AddOrUpdate(updatedProfile);
 
-        // リストの該当項目のみ更新
-        var index = Profiles.FindIndex(p => p.Id.Value == updatedProfile.Id.Value);
-        if (index >= 0)
+        // update list item source
+        var existProfile = Profiles.First(p => p.Id == updatedProfile.Id);
+        if (existProfile != null)
         {
+            var index = Profiles.IndexOf(existProfile);
             Profiles[index] = updatedProfile;
-            OnPropertyChanged(nameof(Profiles));
+        }
+        else
+        {
+            Profiles.Add(updatedProfile);
         }
 
         SelectedProfile = updatedProfile;
@@ -141,9 +146,9 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void AddProfile()
     {
-        _profilesRepository.AddOrUpdate(Profile.Default);
-        Profiles = _profilesRepository.GetAll();
-        SelectedProfile = Profiles[^1];
+        var newProfile = Profile.Default;
+        _profilesRepository.AddOrUpdate(newProfile);
+        UpdateProfiles(newProfile);
     }
 
     [RelayCommand]
@@ -157,9 +162,9 @@ public partial class SettingsViewModel : ObservableObject
         var index = allProfiles.IndexOf(SelectedProfile);
 
         var isLast = index == allProfiles.Count - 1;
-        _profilesRepository.Delete(SelectedProfile.Id);
 
-        Profiles = _profilesRepository.GetAll();
+        _profilesRepository.Delete(SelectedProfile.Id);
+        Profiles.Remove(SelectedProfile);
         SelectedProfile = Profiles[isLast ? index - 1 : index];
     }
 
@@ -168,13 +173,16 @@ public partial class SettingsViewModel : ObservableObject
     private void MoveProfileToUp()
     {
         if (SelectedProfile == null) return;
+
         var allProfiles = _profilesRepository.GetAll();
         if (allProfiles.Count == 1) return;
+
+        // 最上位は移動できない
         var index = allProfiles.IndexOf(SelectedProfile);
         if (index == 0) return;
-        _profilesRepository.MoveIndex(SelectedProfile.Id, -1);
 
-        Profiles = _profilesRepository.GetAll();
+        _profilesRepository.MoveIndex(SelectedProfile.Id, -1);
+        (Profiles[index], Profiles[index - 1]) = (Profiles[index - 1], Profiles[index]);
         SelectedProfile = Profiles[index - 1];
     }
 
@@ -183,13 +191,16 @@ public partial class SettingsViewModel : ObservableObject
     private void MoveProfileToDown()
     {
         if (SelectedProfile == null) return;
+
         var allProfiles = _profilesRepository.GetAll();
         if (allProfiles.Count == 1) return;
+
+        // 最下位は移動できない
         var index = allProfiles.IndexOf(SelectedProfile);
         if (index == allProfiles.Count - 1) return;
-        _profilesRepository.MoveIndex(SelectedProfile.Id, 1);
 
-        Profiles = _profilesRepository.GetAll();
+        _profilesRepository.MoveIndex(SelectedProfile.Id, 1);
+        (Profiles[index], Profiles[index + 1]) = (Profiles[index + 1], Profiles[index]);
         SelectedProfile = Profiles[index + 1];
     }
 
