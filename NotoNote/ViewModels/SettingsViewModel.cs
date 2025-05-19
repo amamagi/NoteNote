@@ -113,7 +113,7 @@ public partial class SettingsViewModel : ObservableObject
         _profilesRepository.AddOrUpdate(updatedProfile);
 
         // update list item source
-        var existProfile = Profiles.First(p => p.Id == updatedProfile.Id);
+        var existProfile = Profiles.FirstOrDefault(p => p.Id == updatedProfile.Id);
         if (existProfile != null)
         {
             var index = Profiles.IndexOf(existProfile);
@@ -147,7 +147,6 @@ public partial class SettingsViewModel : ObservableObject
     private void AddProfile()
     {
         var newProfile = Profile.Default;
-        _profilesRepository.AddOrUpdate(newProfile);
         UpdateProfiles(newProfile);
     }
 
