@@ -22,8 +22,8 @@ public sealed class PresetProfileProvider : IPresetProfileProvider
                 new ProfileId(Guid.Parse(optionProfile.Id)), // TODO: Use option value
                 new ProfileName(profileName),
                 new SystemPrompt(systemPrompt),
-                Constants.AvailableTranscriptionAiModels[0].Id, // TODO: Use option value
-                Constants.AvailableChatAiModels[0].Id); // TODO: Use option value
+                Constants.AvailableTranscriptionModels[0].Id, // TODO: Use option value
+                Constants.AvailableChatModels[0].Id); // TODO: Use option value
             _profiles.Add(profile);
         }
     }

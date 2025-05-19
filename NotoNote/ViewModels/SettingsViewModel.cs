@@ -13,13 +13,17 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IProfileRepository _profilesRepository;
     private readonly IApiKeyRepository _apiKeyRepository;
     private readonly IHotkeyRepository _hotkeyRepository;
+
+    // 入力したHotkeyの表示用テキスト
+    public string HotkeyActivationText => _hotkeyText[HotkeyPurpose.Activation];
+    public string HotkeyToggleProfileText => _hotkeyText[HotkeyPurpose.ToggleProfile];
+
     private readonly Dictionary<HotkeyPurpose, string> _hotkeyText = new()
     {
         { HotkeyPurpose.Activation, ""},
         { HotkeyPurpose.ToggleProfile, ""}
     };
-
-    private readonly Dictionary<HotkeyPurpose, string> _hotkeyTextProperty = new()
+    private readonly IReadOnlyDictionary<HotkeyPurpose, string> _hotkeyTextProperty = new Dictionary<HotkeyPurpose, string>()
     {
         { HotkeyPurpose.Activation, nameof(HotkeyActivationText) },
         { HotkeyPurpose.ToggleProfile, nameof(HotkeyToggleProfileText) }
@@ -29,12 +33,9 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _openAiApiKey = string.Empty;
     [ObservableProperty] private ObservableCollection<Profile> _profiles;
 
-    public static Keys[] AvailableKeys => Constants.AvailableKeys;
-    public TranscriptionAiModelId[] AvailableTranscriptionAiModels { get; } = Constants.AvailableTranscriptionAiModels.Select(m => m.Id).ToArray();
-    public ChatAiModelId[] AvailableChatAiModels { get; } = Constants.AvailableChatAiModels.Select(m => m.Id).ToArray();
-
-    public string HotkeyActivationText => _hotkeyText[HotkeyPurpose.Activation];
-    public string HotkeyToggleProfileText => _hotkeyText[HotkeyPurpose.ToggleProfile];
+    // TODO 
+    public TranscriptionModelId[] AvailableTranscriptionAiModels { get; } = Constants.AvailableTranscriptionModels.Select(m => m.Id).ToArray();
+    public ChatModelId[] AvailableChatAiModels { get; } = Constants.AvailableChatModels.Select(m => m.Id).ToArray();
 
     public string SelectedProfileName
     {
@@ -58,9 +59,9 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    public TranscriptionAiModelId SelectedTranscriptionAiModelId
+    public TranscriptionModelId SelectedTranscriptionAiModelId
     {
-        get => SelectedProfile?.TranscriptionModelId ?? Constants.AvailableTranscriptionAiModels[0].Id;
+        get => SelectedProfile?.TranscriptionModelId ?? Constants.AvailableTranscriptionModels[0].Id;
         set
         {
             if (SelectedProfile == null) return;
@@ -69,9 +70,9 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    public ChatAiModelId SelectedChatAiModelId
+    public ChatModelId SelectedChatAiModelId
     {
-        get => SelectedProfile?.ChatModelId ?? Constants.AvailableChatAiModels[0].Id;
+        get => SelectedProfile?.ChatModelId ?? Constants.AvailableChatModels[0].Id;
         set
         {
             if (SelectedProfile == null) return;
@@ -79,8 +80,6 @@ public partial class SettingsViewModel : ObservableObject
             UpdateProfiles(newProfile);
         }
     }
-
-    public Dictionary<HotkeyPurpose, string> HotkeyTextProperty => _hotkeyTextProperty;
 
     public SettingsViewModel(IProfileRepository profiles, IApiKeyRepository apiKey, IHotkeyRepository hotkeyRepository)
     {
@@ -128,7 +127,7 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     // XAMLのバインディングはプロパティのプロパティ変更イベントを拾えないので、
-    // ViewModelに直接値を持ってSelectedProfileの更新にフックさせて変更イベントを拾う
+    // ViewModelに直接値を持ってSelectedProfileの更新にフックさせて変更イベントを拾わせる
     partial void OnSelectedProfileChanged(Profile value)
     {
         OnPropertyChanged(nameof(SelectedProfileName));
@@ -146,8 +145,7 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private void AddProfile()
     {
-        var newProfile = Profile.Default;
-        UpdateProfiles(newProfile);
+        UpdateProfiles(Profile.Default);
     }
 
     [RelayCommand]

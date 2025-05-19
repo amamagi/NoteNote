@@ -1,15 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using NotoNote.DataStore;
 using NotoNote.Models;
+using NotoNote.Utilities;
 using Stateless;
-using System.IO;
-using System.Security.Cryptography;
 
 namespace NotoNote.ViewModels;
 public partial class MainScreenViewModel : ObservableObject
 {
-    public enum State
+    private enum State
     {
         Idle,
         Recording,
@@ -17,7 +15,7 @@ public partial class MainScreenViewModel : ObservableObject
         Settings
     }
 
-    public enum Trigger
+    private enum Trigger
     {
         StartRecording,
         StopRecording,
@@ -28,39 +26,35 @@ public partial class MainScreenViewModel : ObservableObject
         ExitSettings,
     }
 
-    private Hotkey? _activationHotkey;
-    private Hotkey? _toggleProfileHotkey;
     private readonly Hotkey CancelHotkey = new(Keys.Escape, Keys.None);
 
-    private readonly IClipBoardService _clipboard;
-    private readonly IWindowService _window;
-    private readonly IHotkeyService _hotKey;
-    private readonly IProfileRepository _profilesRepo;
-    private readonly IHotkeyRepository _hotkeyRepo;
-    private readonly IAudioService _audio;
-    private readonly ITranscriptionAiServiceFactory _transcriptionFactory;
-    private readonly IChatAiServiceFactory _chatFactory;
-    private readonly StateMachine<State, Trigger> _machine;
+    private readonly StateMachine<State, Trigger> _stateMachine;
+    private readonly IClipBoardService _clipboardService;
+    private readonly IWindowService _windowService;
+    private readonly IHotkeyService _hotKeyService;
+    private readonly IProfileRepository _profilesRepository;
+    private readonly IHotkeyRepository _hotkeyRepository;
+    private readonly IAudioService _audioService;
+    private readonly ITranscriptionServiceFactory _transcriptionServiceFactory;
+    private readonly IChatServiceFactory _chatServiceFactory;
 
+    [ObservableProperty] private Profile _selectedProfile;
+    [ObservableProperty] private ObservableCollection2<Profile> _profiles;
     [ObservableProperty] private bool _isIdle;
     [ObservableProperty] private bool _isRecording;
     [ObservableProperty] private bool _isProcessing;
     [ObservableProperty] private bool _isSettings;
-    [ObservableProperty] private Profile _selectedProfile;
     [ObservableProperty] private string _processedText = "";
     [ObservableProperty] private string _activationHotkeyText = "";
     [ObservableProperty] private string _stopRecordingHotkeyText = "";
     [ObservableProperty] private string _recordingMessage = "Recording...";
     [ObservableProperty] private bool _enableRecordingAnimation = true;
 
-    private ITranscriptionAiService? _transcriptionAiService;
-    private IChatAiService? _chatAiService;
-
+    private ITranscriptionService? _transcriptionService;
+    private IChatService? _chatService;
     private TranscriptText? _transcriptText;
     private WaveFilePath? _waveFilePath;
     private CancellationTokenSource _processingCtx = new();
-
-    public List<Profile> Profiles { get; set; }
 
     /// <summary>
     /// ProcessedTextをもち再処理が可能か
@@ -71,68 +65,68 @@ public partial class MainScreenViewModel : ObservableObject
         IHotkeyService hotKey,
         IProfileRepository profiles,
         IAudioService audio,
-        ITranscriptionAiServiceFactory transcription,
-        IChatAiServiceFactory chat,
+        ITranscriptionServiceFactory transcription,
+        IChatServiceFactory chat,
         IWindowService window,
         IClipBoardService clipboard,
         IHotkeyRepository hotkeyRepo)
     {
         // initialize fields
-        _hotKey = hotKey;
-        _profilesRepo = profiles;
-        _audio = audio;
-        _transcriptionFactory = transcription;
-        _chatFactory = chat;
-        _window = window;
-        _clipboard = clipboard;
-        _hotkeyRepo = hotkeyRepo;
+        _hotKeyService = hotKey;
+        _profilesRepository = profiles;
+        _audioService = audio;
+        _transcriptionServiceFactory = transcription;
+        _chatServiceFactory = chat;
+        _windowService = window;
+        _clipboardService = clipboard;
+        _hotkeyRepository = hotkeyRepo;
 
         // Set profiles
-        Profiles = _profilesRepo.GetAll();
-        var activeId = _profilesRepo.GetActiveProfileId();
+        Profiles = new(_profilesRepository.GetAll());
+        var activeId = _profilesRepository.GetActiveProfileId();
         _selectedProfile = Profiles.FirstOrDefault(x => x.Id == activeId) ?? Profiles[0];
 
         // Setup state machine
-        _machine = new(State.Idle);
-        //_machine = new(State.Settings);
+        _stateMachine = new(State.Idle);
         ConfigureStateMachine();
+        SetStateFlags(_stateMachine.State);
 
+        // Setup hotkeys
         SetupHotkey();
     }
 
     partial void OnSelectedProfileChanged(Profile value)
     {
-        _profilesRepo.SetActiveProfile(value.Id);
+        if (value == null) return;
+        _profilesRepository.SetActiveProfile(value.Id);
     }
 
     private void ConfigureStateMachine()
     {
-        _machine.Configure(State.Idle)
+        _stateMachine.Configure(State.Idle)
             .OnEntry(OnEntryIdle)
             .Permit(Trigger.StartRecording, State.Recording)
             .Permit(Trigger.EnterSettings, State.Settings)
             .PermitIf(Trigger.Retry, State.Processing, () => HasProcessedText);
 
-        _machine.Configure(State.Recording)
+        _stateMachine.Configure(State.Recording)
             .OnEntry(OnEntryRecording)
             .OnExitAsync(OnExitRecordingAsync)
             .Permit(Trigger.StopRecording, State.Processing)
             .Permit(Trigger.Cancel, State.Idle);
 
-        _machine.Configure(State.Processing)
+        _stateMachine.Configure(State.Processing)
             .OnEntryAsync(OnEntryProcessingAsync)
             .OnExit(OnExitProcessing)
             .Permit(Trigger.CompletedProcessing, State.Idle)
             .Permit(Trigger.Cancel, State.Idle);
 
-        _machine.Configure(State.Settings)
+        _stateMachine.Configure(State.Settings)
             .OnEntry(OnEntrySettings)
             .OnExit(OnExitSettings)
             .Permit(Trigger.ExitSettings, State.Idle);
 
-        // _machine.StateをViewフラグに反映
-        SetStateFlags(_machine.State);
-        _machine.OnTransitioned(t => SetStateFlags(t.Destination));
+        _stateMachine.OnTransitioned(t => SetStateFlags(t.Destination));
     }
 
     private void OnEntryIdle()
@@ -141,13 +135,13 @@ public partial class MainScreenViewModel : ObservableObject
     }
     private void OnEntryRecording()
     {
-        _audio.StartRecording(SetRecordingTimeout);
-        Reset();
+        _audioService.StartRecording(NotifyRecordingTimeout);
+        ResetRecordingState();
     }
 
     private async Task OnExitRecordingAsync()
     {
-        _waveFilePath = await _audio.StopRecordingAsync();
+        _waveFilePath = await _audioService.StopRecordingAsync();
     }
 
     private async Task OnEntryProcessingAsync()
@@ -156,21 +150,21 @@ public partial class MainScreenViewModel : ObservableObject
         var ct = _processingCtx.Token;
         try
         {
-            _transcriptionAiService = _transcriptionFactory.Create(Constants.TranscriptionAiModelMap[SelectedProfile.TranscriptionModelId]);
-            _chatAiService = _chatFactory.Create(Constants.ChatAiModelMap[SelectedProfile.ChatModelId]);
+            _transcriptionService = _transcriptionServiceFactory.Create(Constants.TranscriptionModelMap[SelectedProfile.TranscriptionModelId]);
+            _chatService = _chatServiceFactory.Create(Constants.ChatModelMap[SelectedProfile.ChatModelId]);
 
             // transcriptTextをワイプしてない場合はTranscribeをスキップする。API費用節約と高速化のため。
             if (_transcriptText == null)
             {
                 if (_waveFilePath == null) throw new InvalidOperationException();
-                _transcriptText = await _transcriptionAiService.TranscribeAsync(_waveFilePath);
+                _transcriptText = await _transcriptionService.TranscribeAsync(_waveFilePath);
             }
 
-            var chatResponseText = await _chatAiService.CompleteChatAsync(SelectedProfile.SystemPrompt, _transcriptText, ct);
+            var chatResponseText = await _chatService.CompleteChatAsync(SelectedProfile.SystemPrompt, _transcriptText, ct);
 
             ProcessedText = chatResponseText.Value;
 
-            _clipboard.Paste(ProcessedText);
+            _clipboardService.Paste(ProcessedText);
         }
         catch (Exception ex) when (ex is OperationCanceledException || ex is TaskCanceledException)
         {
@@ -180,7 +174,7 @@ public partial class MainScreenViewModel : ObservableObject
         {
             MessageBox.Show(ex.Message, "Noto note");
         }
-        _machine.Fire(Trigger.CompletedProcessing);
+        _stateMachine.Fire(Trigger.CompletedProcessing);
     }
 
     private void OnExitProcessing()
@@ -192,20 +186,18 @@ public partial class MainScreenViewModel : ObservableObject
     private void OnEntrySettings()
     {
         // 設定画面で実際にキーコンビネーションを入力して設定する際に干渉するので、Hotkeyを無効化する
-        _hotKey.UnregisterAllHotkeys();
+        _hotKeyService.UnregisterAllHotkeys();
     }
 
     private void OnExitSettings()
     {
-        // Profile
-        Profiles = _profilesRepo.GetAll();
-        var activeId = _profilesRepo.GetActiveProfileId();
+        Profiles.Clear();
+        Profiles.AddRange(_profilesRepository.GetAll());
+        var activeId = _profilesRepository.GetActiveProfileId();
         SelectedProfile = Profiles.First(x => x.Id == activeId);
 
         // Hotkey
         SetupHotkey();
-
-        OnPropertyChanged(nameof(Profiles));
     }
 
     private void SetStateFlags(State state)
@@ -218,15 +210,15 @@ public partial class MainScreenViewModel : ObservableObject
 
     private void HandleActivationHotkey()
     {
-        switch (_machine.State)
+        switch (_stateMachine.State)
         {
             case State.Idle:
-                _window.SetTopmost(true);
-                Task.Run(() => _machine.FireAsync(Trigger.StartRecording));
+                _windowService.SetTopmost(true);
+                Task.Run(() => _stateMachine.FireAsync(Trigger.StartRecording));
                 break;
             case State.Recording:
-                _window.SetTopmost(false);
-                Task.Run(() => _machine.FireAsync(Trigger.StopRecording));
+                _windowService.SetTopmost(false);
+                Task.Run(() => _stateMachine.FireAsync(Trigger.StopRecording));
                 break;
             default:
                 // nothing to do
@@ -236,16 +228,16 @@ public partial class MainScreenViewModel : ObservableObject
 
     private void HandleCancelHotkey()
     {
-        switch (_machine.State)
+        switch (_stateMachine.State)
         {
             case State.Recording:
-                _window.Activate();
-                Task.Run(() => _machine.FireAsync(Trigger.Cancel));
+                _windowService.Activate();
+                Task.Run(() => _stateMachine.FireAsync(Trigger.Cancel));
                 break;
             case State.Processing:
-                _window.Activate();
+                _windowService.Activate();
                 _processingCtx.Cancel();
-                Task.Run(() => _machine.FireAsync(Trigger.Cancel));
+                Task.Run(() => _stateMachine.FireAsync(Trigger.Cancel));
                 break;
             default:
                 // nothing to do
@@ -255,10 +247,10 @@ public partial class MainScreenViewModel : ObservableObject
 
     private void HandleProfileToggleHotkey()
     {
-        switch (_machine.State)
+        switch (_stateMachine.State)
         {
             case State.Idle:
-                _window.Activate();
+                _windowService.Activate();
                 var profiles = Profiles.ToList();
                 var index = profiles.IndexOf(SelectedProfile);
                 var profilesCount = profiles.Count;
@@ -270,25 +262,21 @@ public partial class MainScreenViewModel : ObservableObject
     }
     private void SetupHotkey()
     {
-        _hotKey.UnregisterAllHotkeys();
+        _hotKeyService.UnregisterAllHotkeys();
 
         // Register hotkeys
-        var activationHotkey = _hotkeyRepo.Get(HotkeyPurpose.Activation) ?? new Hotkey(Keys.S, Keys.Shift);
-        var toggleProfileHotkey = _hotkeyRepo.Get(HotkeyPurpose.ToggleProfile) ?? new Hotkey(Keys.Tab, Keys.None);
-        _hotKey.RegisterHotkey(activationHotkey, HandleActivationHotkey);
-        _hotKey.RegisterHotkey(CancelHotkey, HandleCancelHotkey);
-        _hotKey.RegisterHotkey(toggleProfileHotkey, HandleProfileToggleHotkey);
+        var activationHotkey = _hotkeyRepository.Get(HotkeyPurpose.Activation);
+        var toggleProfileHotkey = _hotkeyRepository.Get(HotkeyPurpose.ToggleProfile);
+        _hotKeyService.RegisterHotkey(activationHotkey, HandleActivationHotkey);
+        _hotKeyService.RegisterHotkey(toggleProfileHotkey, HandleProfileToggleHotkey);
+        _hotKeyService.RegisterHotkey(CancelHotkey, HandleCancelHotkey);
 
-        ActivationHotkeyText = GetHotkeyText(activationHotkey) + " : Start recording\n" + GetHotkeyText(toggleProfileHotkey) + " : Toggle profiles";
-        StopRecordingHotkeyText = GetHotkeyText(activationHotkey) + " : Stop recording\nESC: Cancel";
+        // Set hotkey text
+        ActivationHotkeyText = $"{activationHotkey}: Start recording\n{toggleProfileHotkey}: Toggle profiles";
+        StopRecordingHotkeyText = $"{activationHotkey}: Stop recording\nESC: Cancel";
     }
 
-    private string GetHotkeyText(Hotkey hotkey)
-    {
-        return hotkey.Modifiers.ToString().Replace(", ", "+") + "+" + hotkey.Key.ToString();
-    }
-
-    private void Reset()
+    private void ResetRecordingState()
     {
         _transcriptText = null;
         _waveFilePath = null;
@@ -297,26 +285,26 @@ public partial class MainScreenViewModel : ObservableObject
         EnableRecordingAnimation = true;
     }
 
-    private void SetRecordingTimeout()
+    private void NotifyRecordingTimeout()
     {
         RecordingMessage = "Recording paused (timeout)";
         EnableRecordingAnimation = false;
     }
 
     [RelayCommand]
-    public void StartRecording() => _machine.Fire(Trigger.StartRecording);
+    public void StartRecording() => _stateMachine.Fire(Trigger.StartRecording);
 
     [RelayCommand]
-    public void Cancel() => _machine.Fire(Trigger.Cancel);
+    public void Cancel() => _stateMachine.Fire(Trigger.Cancel);
 
     [RelayCommand]
-    public void Retry() => Task.Run(() => _machine.FireAsync(Trigger.Retry));
+    public void Retry() => Task.Run(() => _stateMachine.FireAsync(Trigger.Retry));
 
     [RelayCommand]
-    public void EnterSettings() => _machine.Fire(Trigger.EnterSettings);
+    public void EnterSettings() => _stateMachine.Fire(Trigger.EnterSettings);
 
     [RelayCommand]
-    public void ExitSettings() => _machine.Fire(Trigger.ExitSettings);
+    public void ExitSettings() => _stateMachine.Fire(Trigger.ExitSettings);
 
 
 }

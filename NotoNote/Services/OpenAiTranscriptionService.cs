@@ -5,7 +5,7 @@ using System.IO;
 
 namespace NotoNote.Services;
 
-public sealed class OpenAiTranscriptionService : ITranscriptionAiService
+public sealed class OpenAiTranscriptionService : ITranscriptionService
 {
     private readonly AudioClient _client;
 

@@ -1,9 +1,12 @@
-﻿namespace NotoNote.Models;
+﻿using NotoNote.Utilities;
 
-public record OpenAiTranscribeAiModel(TranscriptionAiModelId Id, AiModelName DisplayName, OpenAiApiId ApiId)
-    : RecordWithValidation, ITranscriptionAiModel;
-public record OpenAiChatAiModel(ChatAiModelId Id, AiModelName DisplayName, OpenAiApiId ApiId)
-    : RecordWithValidation, IChatAiModel;
+namespace NotoNote.Models;
+
+public record OpenAiTranscribeAiModel(TranscriptionModelId Id, ModelName DisplayName, OpenAiApiId ApiId)
+    : RecordWithValidation, ITranscriptionModel;
+
+public record OpenAiChatAiModel(ChatModelId Id, ModelName DisplayName, OpenAiApiId ApiId)
+    : RecordWithValidation, IChatModel;
 
 public record OpenAiApiId(string Value) : RecordWithValidation
 {

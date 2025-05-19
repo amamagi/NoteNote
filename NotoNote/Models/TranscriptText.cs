@@ -1,4 +1,6 @@
-﻿namespace NotoNote.Models;
+﻿using NotoNote.Utilities;
+
+namespace NotoNote.Models;
 
 public record TranscriptText(string Value) : RecordWithValidation
 {

@@ -4,14 +4,14 @@ public record Profile(
     ProfileId Id,
     ProfileName Name,
     SystemPrompt SystemPrompt,
-    TranscriptionAiModelId TranscriptionModelId,
-    ChatAiModelId ChatModelId) : RecordWithValidation
+    TranscriptionModelId TranscriptionModelId,
+    ChatModelId ChatModelId) : RecordWithValidation
 {
     public Profile(
         ProfileName name,
         SystemPrompt systemPrompt,
-        TranscriptionAiModelId transcriptionModel,
-        ChatAiModelId chatModel) : this(
+        TranscriptionModelId transcriptionModel,
+        ChatModelId chatModel) : this(
             new(Guid.NewGuid()),
             name,
             systemPrompt,
@@ -22,8 +22,8 @@ public record Profile(
     public static Profile Default => new Profile(
         new("New Profile"),
         new("あなたは音声の書き起こしを整形するアシスタントです。以下のルールに従って書き起こしを整形してください。\n- \n---"),
-        Constants.AvailableTranscriptionAiModels[0].Id,
-        Constants.AvailableChatAiModels[0].Id);
+        Constants.AvailableTranscriptionModels[0].Id,
+        Constants.AvailableChatModels[0].Id);
 }
 
 public record ProfileId(Guid Value) : RecordWithValidation

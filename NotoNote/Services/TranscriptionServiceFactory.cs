@@ -2,17 +2,17 @@
 
 namespace NotoNote.Services;
 
-public sealed class TranscriptionAiServiceFactory : ITranscriptionAiServiceFactory
+public sealed class TranscriptionServiceFactory : ITranscriptionServiceFactory
 {
     private readonly IApiKeyRepository _apiKeys;
     private ApiKey OpenAiApiKey => _apiKeys.Get(ApiProvider.OpenAI) ?? throw new ArgumentException("OpenAI API Key not found");
 
-    public TranscriptionAiServiceFactory(IApiKeyRepository apiKeys) => _apiKeys = apiKeys;
+    public TranscriptionServiceFactory(IApiKeyRepository apiKeys) => _apiKeys = apiKeys;
 
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public ITranscriptionAiService Create(ITranscriptionAiModel model)
+    public ITranscriptionService Create(ITranscriptionModel model)
     {
         return model switch
         {

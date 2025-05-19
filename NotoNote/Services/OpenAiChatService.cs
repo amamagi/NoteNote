@@ -3,7 +3,7 @@ using OpenAI.Chat;
 
 namespace NotoNote.Services;
 
-public sealed class OpenAiChatService : IChatAiService
+public sealed class OpenAiChatService : IChatService
 {
     private readonly ChatClient _client;
 

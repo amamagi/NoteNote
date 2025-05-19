@@ -1,4 +1,4 @@
-﻿namespace NotoNote.Models;
+﻿namespace NotoNote.Utilities;
 
 internal static class StringExtensions
 {

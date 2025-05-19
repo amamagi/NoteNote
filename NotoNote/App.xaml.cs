@@ -40,8 +40,8 @@ public partial class App : Application
                 services.AddSingleton<IHotkeyService, HotkeyService>((_) => new HotkeyService(Current.Dispatcher));
                 services.AddSingleton<IClipBoardService, ClipBoardService>((_) => new ClipBoardService(Current.Dispatcher));
                 services.AddSingleton<IAudioService, AudioService>();
-                services.AddSingleton<ITranscriptionAiServiceFactory, TranscriptionAiServiceFactory>();
-                services.AddSingleton<IChatAiServiceFactory, ChatAiServiceFactory>();
+                services.AddSingleton<ITranscriptionServiceFactory, TranscriptionServiceFactory>();
+                services.AddSingleton<IChatServiceFactory, ChatServiceFactory>();
 
                 // Views/ViewModels
                 services.AddSingleton<SettingsViewModel>();

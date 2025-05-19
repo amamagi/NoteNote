@@ -1,8 +1,8 @@
 ﻿namespace NotoNote.Models;
-public interface ITranscriptionAiService
+public interface IChatService
 {
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="TaskCanceledException"></exception>
-    Task<TranscriptText> TranscribeAsync(WaveFilePath filePath, CancellationToken ct = default);
+    Task<ChatResponceText> CompleteChatAsync(SystemPrompt systemPrompt, TranscriptText transcript, CancellationToken ct = default);
 }

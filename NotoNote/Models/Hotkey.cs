@@ -15,4 +15,11 @@ public record Hotkey : RecordWithValidation
 
     public Keys Key { get; }
     public Keys Modifiers { get; }
+
+    public override string ToString()
+    {
+        var key = Key.ToString();
+        var modifiers = Modifiers.ToString().Replace("Control", "Ctrl");
+        return $"{modifiers} + {key}";
+    }
 }

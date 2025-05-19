@@ -4,7 +4,6 @@ using NotoNote.Models;
 namespace NotoNote.DataStore;
 public sealed class ProfileDto
 {
-
     [BsonId]
     public Guid Id { get; init; }
     public string Name { get; set; } = string.Empty;
@@ -22,8 +21,8 @@ public static class ProfileExtensions
             new ProfileId(dto.Id),
             new ProfileName(dto.Name),
             new SystemPrompt(dto.SystemPrompt),
-            new TranscriptionAiModelId(dto.TranscriptionAiModelId),
-            new ChatAiModelId(dto.ChatModelId));
+            new TranscriptionModelId(dto.TranscriptionAiModelId),
+            new ChatModelId(dto.ChatModelId));
     }
     public static ProfileDto ToDto(this Profile model, Guid nextId)
     {
