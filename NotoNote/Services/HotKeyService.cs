@@ -6,6 +6,7 @@ namespace NotoNote.Services;
 public sealed class HotkeyService : IHotkeyService, IDisposable
 {
     private readonly Dictionary<Hotkey, Action> _hotkeyCallbacks = [];
+    private readonly Dictionary<Hotkey, Func<Task>> _hotkeyAsyncCallbacks = [];
     private readonly IKeyboardInterceptor _interceptor;
     private readonly Dispatcher _uiDispatcher;
 
@@ -57,8 +58,20 @@ public sealed class HotkeyService : IHotkeyService, IDisposable
                 _uiDispatcher.BeginInvoke(callback.Value);
             }
         }
+        foreach (var callback in _hotkeyAsyncCallbacks)
+        {
+            if (callback.Key == hotkey)
+            {
+                handled = true;
+                _uiDispatcher.BeginInvoke(async () => await callback.Value());
+            }
+        }
         return handled;
     }
 
+    public void RegisterHotkey(Hotkey hotkey, Func<Task> callback)
+    {
+        _hotkeyAsyncCallbacks[hotkey] = callback;
+    }
 }
 

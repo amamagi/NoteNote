@@ -19,7 +19,7 @@ public record Hotkey : RecordWithValidation
     public override string ToString()
     {
         var key = Key.ToString();
-        var modifiers = Modifiers.ToString().Replace("Control", "Ctrl");
-        return $"{modifiers} + {key}";
+        var modifiers = Modifiers.ToString().Replace("Control", "Ctrl").Replace(", ", "+");
+        return $"{modifiers}+{key}";
     }
 }

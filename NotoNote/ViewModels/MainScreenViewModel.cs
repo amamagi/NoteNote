@@ -135,12 +135,14 @@ public partial class MainScreenViewModel : ObservableObject
     }
     private void OnEntryRecording()
     {
+        _windowService.SetTopmost(true);
         _audioService.StartRecording(NotifyRecordingTimeout);
         ResetRecordingState();
     }
 
     private async Task OnExitRecordingAsync()
     {
+        _windowService.SetTopmost(false);
         _waveFilePath = await _audioService.StopRecordingAsync();
     }
 
@@ -208,17 +210,15 @@ public partial class MainScreenViewModel : ObservableObject
         IsSettings = state == State.Settings;
     }
 
-    private void HandleActivationHotkey()
+    private async Task HandleActivationHotkeyAsync()
     {
         switch (_stateMachine.State)
         {
             case State.Idle:
-                _windowService.SetTopmost(true);
-                Task.Run(() => _stateMachine.FireAsync(Trigger.StartRecording));
+                await _stateMachine.FireAsync(Trigger.StartRecording);
                 break;
             case State.Recording:
-                _windowService.SetTopmost(false);
-                Task.Run(() => _stateMachine.FireAsync(Trigger.StopRecording));
+                await _stateMachine.FireAsync(Trigger.StopRecording);
                 break;
             default:
                 // nothing to do
@@ -226,18 +226,16 @@ public partial class MainScreenViewModel : ObservableObject
         }
     }
 
-    private void HandleCancelHotkey()
+    private async Task HandleCancelHotkeyAsync()
     {
         switch (_stateMachine.State)
         {
             case State.Recording:
-                _windowService.Activate();
-                Task.Run(() => _stateMachine.FireAsync(Trigger.Cancel));
+                await _stateMachine.FireAsync(Trigger.Cancel);
                 break;
             case State.Processing:
-                _windowService.Activate();
                 _processingCtx.Cancel();
-                Task.Run(() => _stateMachine.FireAsync(Trigger.Cancel));
+                await _stateMachine.FireAsync(Trigger.Cancel);
                 break;
             default:
                 // nothing to do
@@ -267,9 +265,9 @@ public partial class MainScreenViewModel : ObservableObject
         // Register hotkeys
         var activationHotkey = _hotkeyRepository.Get(HotkeyPurpose.Activation);
         var toggleProfileHotkey = _hotkeyRepository.Get(HotkeyPurpose.ToggleProfile);
-        _hotKeyService.RegisterHotkey(activationHotkey, HandleActivationHotkey);
+        _hotKeyService.RegisterHotkey(activationHotkey, HandleActivationHotkeyAsync);
         _hotKeyService.RegisterHotkey(toggleProfileHotkey, HandleProfileToggleHotkey);
-        _hotKeyService.RegisterHotkey(CancelHotkey, HandleCancelHotkey);
+        _hotKeyService.RegisterHotkey(CancelHotkey, HandleCancelHotkeyAsync);
 
         // Set hotkey text
         ActivationHotkeyText = $"{activationHotkey}: Start recording\n{toggleProfileHotkey}: Toggle profiles";
@@ -298,7 +296,7 @@ public partial class MainScreenViewModel : ObservableObject
     public void Cancel() => _stateMachine.Fire(Trigger.Cancel);
 
     [RelayCommand]
-    public void Retry() => Task.Run(() => _stateMachine.FireAsync(Trigger.Retry));
+    public async Task Retry() => await _stateMachine.FireAsync(Trigger.Retry);
 
     [RelayCommand]
     public void EnterSettings() => _stateMachine.Fire(Trigger.EnterSettings);
