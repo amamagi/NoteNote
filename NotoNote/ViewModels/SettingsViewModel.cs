@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using NotoNote.Models;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using MessageBox = System.Windows.MessageBox;
@@ -13,6 +14,8 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IProfileRepository _profilesRepository;
     private readonly IApiKeyRepository _apiKeyRepository;
     private readonly IHotkeyRepository _hotkeyRepository;
+    private readonly ITranscriptionModelProvider _transcriptionModelProvider;
+    private readonly IChatModelProvider _chatModelProvider;
 
     // 入力したHotkeyの表示用テキスト
     public string HotkeyActivationText => _hotkeyText[HotkeyPurpose.Activation];
@@ -31,11 +34,12 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty] private Profile _selectedProfile;
     [ObservableProperty] private string _openAiApiKey = string.Empty;
+    [ObservableProperty] private string _geminiApiKey = string.Empty;
     [ObservableProperty] private ObservableCollection<Profile> _profiles;
 
     // TODO: ModelId -> ModelName  
-    public TranscriptionModelId[] AvailableTranscriptionAiModels { get; }
-    public ChatModelId[] AvailableChatAiModels { get; }
+    public ITranscriptionModel[] AvailableTranscriptionAiModels { get; }
+    public IChatModel[] AvailableChatAiModels { get; }
 
     public string SelectedProfileName
     {
@@ -59,24 +63,40 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    public TranscriptionModelId SelectedTranscriptionAiModelId
+    public ITranscriptionModel SelectedTranscriptionAiModel
     {
-        get => SelectedProfile?.TranscriptionModelId ?? Constants.DefaultTranscriptionModelId;
+        get
+        {
+            if (SelectedProfile != null && SelectedProfile.TranscriptionModelId != null)
+            {
+                var selected = _transcriptionModelProvider.Get(SelectedProfile.TranscriptionModelId);
+                if (selected != null) return selected;
+            }
+            return _transcriptionModelProvider.GetAll().First();
+        }
         set
         {
             if (SelectedProfile == null) return;
-            var newProfile = SelectedProfile with { TranscriptionModelId = value };
+            var newProfile = SelectedProfile with { TranscriptionModelId = value.Id };
             UpdateProfiles(newProfile);
         }
     }
 
-    public ChatModelId SelectedChatAiModelId
+    public IChatModel SelectedChatAiModel
     {
-        get => SelectedProfile?.ChatModelId ?? Constants.DefaultChatModelId;
+        get
+        {
+            if (SelectedProfile != null && SelectedProfile.ChatModelId != null)
+            {
+                var selected = _chatModelProvider.Get(SelectedProfile.ChatModelId);
+                if (selected != null) return selected;
+            }
+            return _chatModelProvider.GetAll().First();
+        }
         set
         {
             if (SelectedProfile == null) return;
-            var newProfile = SelectedProfile with { ChatModelId = value };
+            var newProfile = SelectedProfile with { ChatModelId = value.Id };
             UpdateProfiles(newProfile);
         }
     }
@@ -91,9 +111,11 @@ public partial class SettingsViewModel : ObservableObject
         _profilesRepository = profiles;
         _apiKeyRepository = apiKey;
         _hotkeyRepository = hotkeyRepository;
+        _transcriptionModelProvider = transcriptionModelProvider;
+        _chatModelProvider = chatModelProvider;
 
-        AvailableTranscriptionAiModels = transcriptionModelProvider.GetAll().Select(x => x.Id).ToArray();
-        AvailableChatAiModels = chatModelProvider.GetAll().Select(x => x.Id).ToArray();
+        AvailableTranscriptionAiModels = transcriptionModelProvider.GetAll().ToArray();
+        AvailableChatAiModels = chatModelProvider.GetAll().ToArray();
 
         // API Key
         var savedOpenAiApiKey = _apiKeyRepository.Get(ApiSource.OpenAI);
@@ -117,6 +139,8 @@ public partial class SettingsViewModel : ObservableObject
 
     public void UpdateProfiles(Profile updatedProfile)
     {
+        Debug.WriteLine($"UpdateProfiles: {updatedProfile.Id} {updatedProfile.Name} {updatedProfile.SystemPrompt} {updatedProfile.TranscriptionModelId} {updatedProfile.ChatModelId}");
+
         _profilesRepository.AddOrUpdate(updatedProfile);
 
         // update list item source
@@ -140,14 +164,20 @@ public partial class SettingsViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(SelectedProfileName));
         OnPropertyChanged(nameof(SelectedProfileSystemPrompt));
-        OnPropertyChanged(nameof(SelectedTranscriptionAiModelId));
-        OnPropertyChanged(nameof(SelectedChatAiModelId));
+        OnPropertyChanged(nameof(SelectedTranscriptionAiModel));
+        OnPropertyChanged(nameof(SelectedChatAiModel));
     }
 
     partial void OnOpenAiApiKeyChanged(string value)
     {
         if (string.IsNullOrEmpty(value)) _apiKeyRepository.Delete(ApiSource.OpenAI);
         else _apiKeyRepository.AddOrUpdate(new ApiKey(ApiSource.OpenAI, value));
+    }
+
+    partial void OnGeminiApiKeyChanged(string value)
+    {
+        if (string.IsNullOrEmpty(value)) _apiKeyRepository.Delete(ApiSource.Gemini);
+        else _apiKeyRepository.AddOrUpdate(new ApiKey(ApiSource.Gemini, value));
     }
 
     [RelayCommand]

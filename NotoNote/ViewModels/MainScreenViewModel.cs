@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using NotoNote.Models;
 using NotoNote.Utilities;
 using Stateless;
+using System.Diagnostics;
 
 namespace NotoNote.ViewModels;
 public partial class MainScreenViewModel : ObservableObject
@@ -94,10 +95,8 @@ public partial class MainScreenViewModel : ObservableObject
         _stateMachine = new(State.Idle);
         ConfigureStateMachine();
         SetStateFlags(_stateMachine.State);
-
-        // Setup hotkeys
-        RegisterHotkey();
-        _chatModelProvider = chatModelProvider;
+        OnEntryIdle();
+        UpdateHotkeyTextBlock();
     }
 
     partial void OnSelectedProfileChanged(Profile value)
@@ -134,33 +133,72 @@ public partial class MainScreenViewModel : ObservableObject
         _stateMachine.OnTransitioned(t => SetStateFlags(t.Destination));
     }
 
+    private void UpdateHotkeyTextBlock()
+    {
+        var activationHotkey = _hotkeyRepository.Get(HotkeyPurpose.Activation);
+        var toggleProfileHotkey = _hotkeyRepository.Get(HotkeyPurpose.ToggleProfile);
+        ActivationHotkeyText = $"{activationHotkey}: Start recording\n{toggleProfileHotkey}: Toggle profiles";
+        StopRecordingHotkeyText = $"{activationHotkey}: Stop recording\nESC: Cancel";
+    }
+
     private void OnEntryIdle()
     {
+        Debug.WriteLine("[Idle] Waiting for input.");
+
         OnPropertyChanged(nameof(HasProcessedText));
+
+        // Register hotkeys
+        var activationHotkey = _hotkeyRepository.Get(HotkeyPurpose.Activation);
+        _hotKeyService.RegisterHotkey(activationHotkey, HandleActivationHotkeyAsync);
+        var toggleProfileHotkey = _hotkeyRepository.Get(HotkeyPurpose.ToggleProfile);
+        _hotKeyService.RegisterHotkey(toggleProfileHotkey, HandleProfileToggleHotkey);
     }
     private void OnEntryRecording()
     {
+        Debug.WriteLine("[Recording] Start.");
+
+        // Register hotkeys
+        _hotKeyService.UnregisterAllHotkeys();
+        var activationHotkey = _hotkeyRepository.Get(HotkeyPurpose.Activation);
+        _hotKeyService.RegisterHotkey(activationHotkey, HandleActivationHotkeyAsync);
+        _hotKeyService.RegisterHotkey(CancelHotkey, HandleCancelHotkeyAsync);
+
+        // Window control
         _windowService.SetTopmost(true);
+
+        // Start recording
         _audioService.StartRecording(NotifyRecordingTimeout);
         ResetRecordingState();
     }
 
     private async Task OnExitRecordingAsync()
     {
+        Debug.WriteLine("[Recording] Stop.");
+
+        _hotKeyService.UnregisterAllHotkeys();
+
         _windowService.SetTopmost(false);
         _waveFilePath = await _audioService.StopRecordingAsync();
     }
 
     private async Task OnEntryProcessingAsync()
     {
+        Debug.WriteLine("[Processing] Start.");
+
+        // Register hotkeys
+        _hotKeyService.UnregisterAllHotkeys();
+        _hotKeyService.RegisterHotkey(CancelHotkey, HandleCancelHotkeyAsync);
+
         _processingCtx = new CancellationTokenSource();
         var ct = _processingCtx.Token;
         try
         {
-            var transcriptionModel = _transcriptionModelProvider.Get(SelectedProfile.TranscriptionModelId);
+            var transcriptionModel = _transcriptionModelProvider.Get(SelectedProfile.TranscriptionModelId) ?? throw new InvalidOperationException($"Transcription model not found: {SelectedProfile.TranscriptionModelId}");
             var transcriptionService = _transcriptionServiceFactory.Create(transcriptionModel);
-            var chatModel = _chatModelProvider.Get(SelectedProfile.ChatModelId);
+            var chatModel = _chatModelProvider.Get(SelectedProfile.ChatModelId) ?? throw new InvalidOperationException($"Chat model not found: {SelectedProfile.ChatModelId}");
             var chatService = _chatServiceFactory.Create(chatModel);
+
+            Debug.WriteLine($"[Processing] TranscriptionModel: {transcriptionModel.DisplayName.Value}, ChatModel: {chatModel.DisplayName.Value}");
 
             // transcriptTextをワイプしてない場合はTranscribeをスキップする。API費用節約と高速化のため。
             if (_transcriptText == null)
@@ -188,24 +226,29 @@ public partial class MainScreenViewModel : ObservableObject
 
     private void OnExitProcessing()
     {
+        Debug.WriteLine("[Processing] Stop.");
+
+        _hotKeyService.UnregisterAllHotkeys();
         _processingCtx?.Cancel();
         _processingCtx?.Dispose();
     }
 
     private void OnEntrySettings()
     {
+        Debug.WriteLine("[Settings] Open.");
+
         // 設定画面で実際にキーコンビネーションを入力して設定する際に干渉するので、Hotkeyを無効化する
         _hotKeyService.UnregisterAllHotkeys();
     }
 
     private void OnExitSettings()
     {
+        Debug.WriteLine("[Settings] Close.");
+
         Profiles.Clear();
         Profiles.AddRange(_profilesRepository.GetAll());
         var activeId = _profilesRepository.GetActiveProfileId();
         SelectedProfile = Profiles.First(x => x.Id == activeId);
-
-        RegisterHotkey();
     }
 
     private void SetStateFlags(State state)
@@ -263,21 +306,6 @@ public partial class MainScreenViewModel : ObservableObject
             default:
                 break;
         }
-    }
-    private void RegisterHotkey()
-    {
-        _hotKeyService.UnregisterAllHotkeys();
-
-        // Register hotkeys
-        var activationHotkey = _hotkeyRepository.Get(HotkeyPurpose.Activation);
-        var toggleProfileHotkey = _hotkeyRepository.Get(HotkeyPurpose.ToggleProfile);
-        _hotKeyService.RegisterHotkey(activationHotkey, HandleActivationHotkeyAsync);
-        _hotKeyService.RegisterHotkey(toggleProfileHotkey, HandleProfileToggleHotkey);
-        _hotKeyService.RegisterHotkey(CancelHotkey, HandleCancelHotkeyAsync);
-
-        // Set hotkey text
-        ActivationHotkeyText = $"{activationHotkey}: Start recording\n{toggleProfileHotkey}: Toggle profiles";
-        StopRecordingHotkeyText = $"{activationHotkey}: Stop recording\nESC: Cancel";
     }
 
     private void ResetRecordingState()

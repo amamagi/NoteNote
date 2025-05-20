@@ -44,9 +44,23 @@ public class ModelApiCollector : ITranscriptionModelProvider, IChatModelProvider
 
     }
 
-    public ITranscriptionModel Get(TranscriptionModelId id) => _transcriptionModels[id];
+    public ITranscriptionModel? Get(TranscriptionModelId id)
+    {
+        if (_transcriptionModels.TryGetValue(id, out var model))
+        {
+            return model;
+        }
+        return null;
+    }
     IEnumerable<ITranscriptionModel> ITranscriptionModelProvider.GetAll() => _transcriptionModels.Values;
-    public IChatModel Get(ChatModelId id) => _chatModels[id];
+    public IChatModel? Get(ChatModelId id)
+    {
+        if (_chatModels.TryGetValue(id, out var model))
+        {
+            return model;
+        }
+        return null;
+    }
     IEnumerable<IChatModel> IChatModelProvider.GetAll() => _chatModels.Values;
 
 }

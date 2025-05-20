@@ -20,8 +20,10 @@
                     <StackPanel Margin="8">
                         <!-- API KEY -->
                         <TextBlock Text="API Key" FontWeight="Bold" TextWrapping="WrapWithOverflow"/>
-                        <TextBlock Text="OpenAI API Key" TextWrapping="WrapWithOverflow"/>
+                        <TextBlock Text="OpenAI API Key" TextWrapping="WrapWithOverflow" Margin="0,4,0,0"/>
                         <TextBox Text="{Binding OpenAiApiKey}" Margin="0,4,0,0"/>
+                        <TextBlock Text="Gemini API Key" TextWrapping="WrapWithOverflow" Margin="0,4,0,0"/>
+                        <TextBox Text="{Binding GeminiApiKey}" Margin="0,4,0,0"/>
 
                         <!-- Hotkey -->
                         <TextBlock Text="Hotkey" FontWeight="Bold" FontSize="14" TextWrapping="WrapWithOverflow" Margin="0,8,0,0"/>
@@ -140,9 +142,9 @@
                                      TextWrapping="Wrap" AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" />
                             <TextBlock Grid.Row="5" Text="Transcription Model"/>
-                            <ComboBox Grid.Row="6" ItemsSource="{Binding AvailableTranscriptionAiModels}" SelectedItem="{Binding SelectedTranscriptionAiModelId}" DisplayMemberPath="Value"/>
+                            <ComboBox Grid.Row="6" ItemsSource="{Binding AvailableTranscriptionAiModels}" SelectedItem="{Binding SelectedTranscriptionAiModel}" DisplayMemberPath="DisplayName.Value"/>
                             <TextBlock Grid.Row="7" Text="Chat Model"/>
-                            <ComboBox Grid.Row="8" ItemsSource="{Binding AvailableChatAiModels}" SelectedItem="{Binding SelectedChatAiModelId}" DisplayMemberPath="Value"/>
+                            <ComboBox Grid.Row="8" ItemsSource="{Binding AvailableChatAiModels}" SelectedItem="{Binding SelectedChatAiModel}" DisplayMemberPath="DisplayName.Value"/>
                         </Grid>
                     </ScrollViewer>
 
