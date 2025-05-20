@@ -33,13 +33,30 @@ public partial class SettingsViewModel : ObservableObject
     };
 
     [ObservableProperty] private Profile _selectedProfile;
-    [ObservableProperty] private string _openAiApiKey = string.Empty;
-    [ObservableProperty] private string _geminiApiKey = string.Empty;
     [ObservableProperty] private ObservableCollection<Profile> _profiles;
 
     // TODO: ModelId -> ModelName  
     public ITranscriptionModel[] AvailableTranscriptionAiModels { get; }
     public IChatModel[] AvailableChatAiModels { get; }
+
+    public string OpenAiApiKey
+    {
+        get => _apiKeyRepository.Get(ApiSource.OpenAI)?.Value ?? string.Empty;
+        set
+        {
+            if (string.IsNullOrEmpty(value)) _apiKeyRepository.Delete(ApiSource.OpenAI);
+            else _apiKeyRepository.AddOrUpdate(new ApiKey(ApiSource.OpenAI, value));
+        }
+    }
+    public string GeminiApiKey
+    {
+        get => _apiKeyRepository.Get(ApiSource.Gemini)?.Value ?? string.Empty;
+        set
+        {
+            if (string.IsNullOrEmpty(value)) _apiKeyRepository.Delete(ApiSource.Gemini);
+            else _apiKeyRepository.AddOrUpdate(new ApiKey(ApiSource.Gemini, value));
+        }
+    }
 
     public string SelectedProfileName
     {
@@ -117,10 +134,6 @@ public partial class SettingsViewModel : ObservableObject
         AvailableTranscriptionAiModels = transcriptionModelProvider.GetAll().ToArray();
         AvailableChatAiModels = chatModelProvider.GetAll().ToArray();
 
-        // API Key
-        var savedOpenAiApiKey = _apiKeyRepository.Get(ApiSource.OpenAI);
-        if (savedOpenAiApiKey != null) OpenAiApiKey = savedOpenAiApiKey.Value;
-
         // Profile
         var activeId = _profilesRepository.GetActiveProfileId();
         _selectedProfile = _profilesRepository.Get(activeId) ?? _profilesRepository.GetAll().First();
@@ -166,18 +179,6 @@ public partial class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedProfileSystemPrompt));
         OnPropertyChanged(nameof(SelectedTranscriptionAiModel));
         OnPropertyChanged(nameof(SelectedChatAiModel));
-    }
-
-    partial void OnOpenAiApiKeyChanged(string value)
-    {
-        if (string.IsNullOrEmpty(value)) _apiKeyRepository.Delete(ApiSource.OpenAI);
-        else _apiKeyRepository.AddOrUpdate(new ApiKey(ApiSource.OpenAI, value));
-    }
-
-    partial void OnGeminiApiKeyChanged(string value)
-    {
-        if (string.IsNullOrEmpty(value)) _apiKeyRepository.Delete(ApiSource.Gemini);
-        else _apiKeyRepository.AddOrUpdate(new ApiKey(ApiSource.Gemini, value));
     }
 
     [RelayCommand]
