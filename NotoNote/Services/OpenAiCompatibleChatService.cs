@@ -1,15 +1,19 @@
 ﻿using NotoNote.Models;
+using OpenAI;
 using OpenAI.Chat;
 
 namespace NotoNote.Services;
 
-public sealed class OpenAiChatService : IChatService
+public sealed class OpenAiCompatibleChatService : IChatService
 {
     private readonly ChatClient _client;
 
-    public OpenAiChatService(OpenAiApiId model, ApiKey apiKey)
+    public OpenAiCompatibleChatService(ApiKey apiKey, Uri endpoint, ApiModelId model)
     {
-        _client = new ChatClient(model.Value, apiKey.Value);
+        _client = new OpenAIClient(new(apiKey.Value), new OpenAIClientOptions()
+        {
+            Endpoint = endpoint,
+        }).GetChatClient(model.Value);
     }
 
     public async Task<ChatResponceText> CompleteChatAsync(SystemPrompt systemPrompt, TranscriptText transcript, CancellationToken ct = default)

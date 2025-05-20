@@ -1,41 +1,55 @@
 ﻿using LiteDB;
+using Microsoft.Extensions.Options;
 using NotoNote.Models;
+using NotoNote.Services;
 
 namespace NotoNote.DataStore;
 public sealed class ApiKeyRepository : IApiKeyRepository
 {
     private readonly ILiteCollection<ApiKeyDto> _collection;
+    private readonly Dictionary<ApiSource, ApiKey> _apiKeysFromOption = new();
 
-    public ApiKeyRepository(ILiteDbContext context)
+    public ApiKeyRepository(ILiteDbContext context, IOptions<List<OpenAiCompatibleApiOptions>> options)
     {
         _collection = context.ApiKeys;
+
+        foreach (var option in options.Value)
+        {
+            if (string.IsNullOrEmpty(option.ApiKey) || string.IsNullOrEmpty(option.Name))
+            {
+                continue;
+            }
+            var source = new ApiSource(option.Name);
+            var apiKey = new ApiKey(source, option.ApiKey);
+            _apiKeysFromOption[source] = apiKey;
+        }
     }
 
-    public void Delete(ApiProvider apiProvider)
+    public void Delete(ApiSource source)
     {
-        var bsonId = apiProvider.ToString();
+        var bsonId = source.ToString();
         _collection.Delete(bsonId);
     }
 
-    public ApiKey? Get(ApiProvider apiProvider)
+    public ApiKey? Get(ApiSource source)
     {
-        var dto = _collection.FindById(apiProvider.ToString());
-        if (dto == null) return null;
+        var dto = _collection.FindById(source.ToString());
+        if (dto == null)
+        {
+            if (_apiKeysFromOption.TryGetValue(source, out var apiKey))
+            {
+                return apiKey;
+            }
+            // No record found, return null
+            return null;
+        }
         if (dto.Value == null)
         {
             // Invalid record
-            Delete(apiProvider);
+            Delete(source);
             return null;
         }
-
         return dto.ToModel();
-    }
-
-    public IEnumerable<ApiKey> GetAll()
-    {
-        return _collection.FindAll()
-            .OrderBy(x => x.Provider)
-            .Select(x => x.ToModel());
     }
 
     public void Set(ApiKey apiKey)
@@ -45,7 +59,7 @@ public sealed class ApiKeyRepository : IApiKeyRepository
 
     public void AddOrUpdate(ApiKey apiKey)
     {
-        var existing = Get(apiKey.Provider);
+        var existing = Get(apiKey.Source);
         if (existing == null)
         {
             Set(apiKey);

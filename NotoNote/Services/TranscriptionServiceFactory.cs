@@ -5,7 +5,6 @@ namespace NotoNote.Services;
 public sealed class TranscriptionServiceFactory : ITranscriptionServiceFactory
 {
     private readonly IApiKeyRepository _apiKeys;
-    private ApiKey OpenAiApiKey => _apiKeys.Get(ApiProvider.OpenAI) ?? throw new ArgumentException("OpenAI API Key not found");
 
     public TranscriptionServiceFactory(IApiKeyRepository apiKeys) => _apiKeys = apiKeys;
 
@@ -14,10 +13,13 @@ public sealed class TranscriptionServiceFactory : ITranscriptionServiceFactory
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public ITranscriptionService Create(ITranscriptionModel model)
     {
-        return model switch
+        if (model is OpenAiCompatibleTranscribeModel om)
         {
-            OpenAiTranscribeAiModel om => new OpenAiTranscriptionService(om.ApiId, OpenAiApiKey),
-            _ => throw new ArgumentOutOfRangeException(nameof(model.GetType)),
-        };
+            var apiKey = _apiKeys.Get(om.ApiSource.ApiSource) ?? throw new ArgumentException($"{om.ApiSource} API Key not found");
+            return new OpenAiCompatibleTranscriptionService(apiKey, om.ApiSource.Uri, om.ApiId);
+            // TODO: serviceはキャッシュした方がいいかも
+        }
+
+        throw new NotImplementedException($"Transcription model {model.GetType()} is not implemented.");
     }
 }

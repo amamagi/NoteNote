@@ -1,17 +1,21 @@
 ﻿using NotoNote.Models;
+using OpenAI;
 using OpenAI.Audio;
 using System.Diagnostics;
 using System.IO;
 
 namespace NotoNote.Services;
 
-public sealed class OpenAiTranscriptionService : ITranscriptionService
+public sealed class OpenAiCompatibleTranscriptionService : ITranscriptionService
 {
     private readonly AudioClient _client;
 
-    public OpenAiTranscriptionService(OpenAiApiId model, ApiKey apiKey)
+    public OpenAiCompatibleTranscriptionService(ApiKey apiKey, Uri endpoint, ApiModelId model)
     {
-        _client = new(model.Value, apiKey.Value);
+        _client = new OpenAIClient(new(apiKey.Value), new()
+        {
+            Endpoint = endpoint,
+        }).GetAudioClient(model.Value);
     }
 
     public async Task<TranscriptText> TranscribeAsync(WaveFilePath filePath, CancellationToken ct = default)

@@ -5,15 +5,16 @@ namespace NotoNote.Services;
 public sealed class ChatServiceFactory : IChatServiceFactory
 {
     private readonly IApiKeyRepository _apiKeys;
-    private ApiKey OpenAiApiKey => _apiKeys.Get(ApiProvider.OpenAI) ?? throw new ArgumentException("OpenAI API Key not found");
-
     public ChatServiceFactory(IApiKeyRepository apiKeys) => _apiKeys = apiKeys;
     public IChatService Create(IChatModel model)
     {
-        return model switch
+        if (model is OpenAiCompatibleChatModel om)
         {
-            OpenAiChatAiModel om => new OpenAiChatService(om.ApiId, OpenAiApiKey),
-            _ => throw new ArgumentOutOfRangeException(nameof(model.GetType)),
-        };
+            var apiKey = _apiKeys.Get(om.ApiSource.ApiSource) ?? throw new ArgumentException($"{om.ApiSource} API Key not found");
+            return new OpenAiCompatibleChatService(apiKey, om.ApiSource.Uri, om.ApiId);
+            // TODO: serviceはキャッシュした方がいいかも
+        }
+
+        throw new NotImplementedException($"Chat model {model.GetType()} is not implemented.");
     }
 }

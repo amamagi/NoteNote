@@ -25,8 +25,8 @@ public partial class App : Application
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices((ctx, services) =>
             {
-                services.Configure<OpenAiOptions>(ctx.Configuration.GetSection("OpenAI"));
                 services.Configure<List<PresetProfileOptions>>(ctx.Configuration.GetSection("PresetProfiles"));
+                services.Configure<List<OpenAiCompatibleApiOptions>>(ctx.Configuration.GetSection("OpenAiCompatibleApi"));
 
                 // DataStore
                 services.AddSingleton<ILiteDbContext, LiteDbContext>();
@@ -36,6 +36,9 @@ public partial class App : Application
                 services.AddSingleton<IHotkeyRepository, HotkeyRepository>();
 
                 // Services
+                services.AddSingleton<ModelApiCollector>();
+                services.AddSingleton<ITranscriptionModelProvider>(sp => sp.GetRequiredService<ModelApiCollector>());
+                services.AddSingleton<IChatModelProvider>(sp => sp.GetRequiredService<ModelApiCollector>());
                 services.AddSingleton<IWindowService, WindowService>();
                 services.AddSingleton<IHotkeyService, HotkeyService>((_) => new HotkeyService(Current.Dispatcher));
                 services.AddSingleton<IClipBoardService, ClipBoardService>((_) => new ClipBoardService(Current.Dispatcher));

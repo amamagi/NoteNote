@@ -37,6 +37,8 @@ public partial class MainScreenViewModel : ObservableObject
     private readonly IAudioService _audioService;
     private readonly ITranscriptionServiceFactory _transcriptionServiceFactory;
     private readonly IChatServiceFactory _chatServiceFactory;
+    private readonly ITranscriptionModelProvider _transcriptionModelProvider;
+    private readonly IChatModelProvider _chatModelProvider;
 
     [ObservableProperty] private Profile _selectedProfile;
     [ObservableProperty] private ObservableCollection2<Profile> _profiles;
@@ -50,8 +52,6 @@ public partial class MainScreenViewModel : ObservableObject
     [ObservableProperty] private string _recordingMessage = "Recording...";
     [ObservableProperty] private bool _enableRecordingAnimation = true;
 
-    private ITranscriptionService? _transcriptionService;
-    private IChatService? _chatService;
     private TranscriptText? _transcriptText;
     private WaveFilePath? _waveFilePath;
     private CancellationTokenSource _processingCtx = new();
@@ -69,7 +69,9 @@ public partial class MainScreenViewModel : ObservableObject
         IChatServiceFactory chat,
         IWindowService window,
         IClipBoardService clipboard,
-        IHotkeyRepository hotkeyRepo)
+        IHotkeyRepository hotkeyRepo,
+        ITranscriptionModelProvider transcriptionModelProvider,
+        IChatModelProvider chatModelProvider)
     {
         // initialize fields
         _hotKeyService = hotKey;
@@ -80,6 +82,8 @@ public partial class MainScreenViewModel : ObservableObject
         _windowService = window;
         _clipboardService = clipboard;
         _hotkeyRepository = hotkeyRepo;
+        _transcriptionModelProvider = transcriptionModelProvider;
+        _chatModelProvider = chatModelProvider;
 
         // Set profiles
         Profiles = new(_profilesRepository.GetAll());
@@ -92,7 +96,8 @@ public partial class MainScreenViewModel : ObservableObject
         SetStateFlags(_stateMachine.State);
 
         // Setup hotkeys
-        SetupHotkey();
+        RegisterHotkey();
+        _chatModelProvider = chatModelProvider;
     }
 
     partial void OnSelectedProfileChanged(Profile value)
@@ -152,17 +157,19 @@ public partial class MainScreenViewModel : ObservableObject
         var ct = _processingCtx.Token;
         try
         {
-            _transcriptionService = _transcriptionServiceFactory.Create(Constants.TranscriptionModelMap[SelectedProfile.TranscriptionModelId]);
-            _chatService = _chatServiceFactory.Create(Constants.ChatModelMap[SelectedProfile.ChatModelId]);
+            var transcriptionModel = _transcriptionModelProvider.Get(SelectedProfile.TranscriptionModelId);
+            var transcriptionService = _transcriptionServiceFactory.Create(transcriptionModel);
+            var chatModel = _chatModelProvider.Get(SelectedProfile.ChatModelId);
+            var chatService = _chatServiceFactory.Create(chatModel);
 
             // transcriptTextをワイプしてない場合はTranscribeをスキップする。API費用節約と高速化のため。
             if (_transcriptText == null)
             {
                 if (_waveFilePath == null) throw new InvalidOperationException();
-                _transcriptText = await _transcriptionService.TranscribeAsync(_waveFilePath);
+                _transcriptText = await transcriptionService.TranscribeAsync(_waveFilePath);
             }
 
-            var chatResponseText = await _chatService.CompleteChatAsync(SelectedProfile.SystemPrompt, _transcriptText, ct);
+            var chatResponseText = await chatService.CompleteChatAsync(SelectedProfile.SystemPrompt, _transcriptText, ct);
 
             ProcessedText = chatResponseText.Value;
 
@@ -198,8 +205,7 @@ public partial class MainScreenViewModel : ObservableObject
         var activeId = _profilesRepository.GetActiveProfileId();
         SelectedProfile = Profiles.First(x => x.Id == activeId);
 
-        // Hotkey
-        SetupHotkey();
+        RegisterHotkey();
     }
 
     private void SetStateFlags(State state)
@@ -258,7 +264,7 @@ public partial class MainScreenViewModel : ObservableObject
                 break;
         }
     }
-    private void SetupHotkey()
+    private void RegisterHotkey()
     {
         _hotKeyService.UnregisterAllHotkeys();
 

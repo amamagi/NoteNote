@@ -22,8 +22,8 @@ public record Profile(
     public static Profile Default => new Profile(
         new("New Profile"),
         new("あなたは音声の書き起こしを整形するアシスタントです。以下のルールに従って書き起こしを整形してください。\n- \n---"),
-        Constants.AvailableTranscriptionModels[0].Id,
-        Constants.AvailableChatModels[0].Id);
+        Constants.DefaultTranscriptionModelId,
+        Constants.DefaultChatModelId);
 }
 
 public record ProfileId(Guid Value) : RecordWithValidation
