@@ -41,7 +41,7 @@ public partial class SettingsViewModel : ObservableObject
 
     public string OpenAiApiKey
     {
-        get => _apiKeyRepository.Get(ApiSource.OpenAI)?.Value ?? string.Empty;
+        get => _apiKeyRepository.GetFromSaveData(ApiSource.OpenAI)?.Value ?? string.Empty;
         set
         {
             if (string.IsNullOrEmpty(value)) _apiKeyRepository.Delete(ApiSource.OpenAI);
@@ -50,7 +50,7 @@ public partial class SettingsViewModel : ObservableObject
     }
     public string GeminiApiKey
     {
-        get => _apiKeyRepository.Get(ApiSource.Gemini)?.Value ?? string.Empty;
+        get => _apiKeyRepository.GetFromSaveData(ApiSource.Gemini)?.Value ?? string.Empty;
         set
         {
             if (string.IsNullOrEmpty(value)) _apiKeyRepository.Delete(ApiSource.Gemini);

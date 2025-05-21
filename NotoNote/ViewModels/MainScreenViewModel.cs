@@ -4,6 +4,7 @@ using NotoNote.Models;
 using NotoNote.Utilities;
 using Stateless;
 using System.Diagnostics;
+using System.Windows;
 
 namespace NotoNote.ViewModels;
 public partial class MainScreenViewModel : ObservableObject
@@ -40,6 +41,7 @@ public partial class MainScreenViewModel : ObservableObject
     private readonly IChatServiceFactory _chatServiceFactory;
     private readonly ITranscriptionModelProvider _transcriptionModelProvider;
     private readonly IChatModelProvider _chatModelProvider;
+    private readonly IApiKeyRepository _apiKeyRepository;
 
     [ObservableProperty] private Profile _selectedProfile;
     [ObservableProperty] private ObservableCollection2<Profile> _profiles;
@@ -72,7 +74,8 @@ public partial class MainScreenViewModel : ObservableObject
         IClipBoardService clipboard,
         IHotkeyRepository hotkeyRepo,
         ITranscriptionModelProvider transcriptionModelProvider,
-        IChatModelProvider chatModelProvider)
+        IChatModelProvider chatModelProvider,
+        IApiKeyRepository apiKeyRepository)
     {
         // initialize fields
         _hotKeyService = hotKey;
@@ -85,6 +88,7 @@ public partial class MainScreenViewModel : ObservableObject
         _hotkeyRepository = hotkeyRepo;
         _transcriptionModelProvider = transcriptionModelProvider;
         _chatModelProvider = chatModelProvider;
+        _apiKeyRepository = apiKeyRepository;
 
         // Set profiles
         Profiles = new(_profilesRepository.GetAll());
@@ -148,6 +152,7 @@ public partial class MainScreenViewModel : ObservableObject
         OnPropertyChanged(nameof(HasProcessedText));
 
         // Register hotkeys
+        _hotKeyService.UnregisterAllHotkeys();
         var activationHotkey = _hotkeyRepository.Get(HotkeyPurpose.Activation);
         _hotKeyService.RegisterHotkey(activationHotkey, HandleActivationHotkeyAsync);
         var toggleProfileHotkey = _hotkeyRepository.Get(HotkeyPurpose.ToggleProfile);
@@ -157,18 +162,43 @@ public partial class MainScreenViewModel : ObservableObject
     {
         Debug.WriteLine("[Recording] Start.");
 
-        // Register hotkeys
-        _hotKeyService.UnregisterAllHotkeys();
-        var activationHotkey = _hotkeyRepository.Get(HotkeyPurpose.Activation);
-        _hotKeyService.RegisterHotkey(activationHotkey, HandleActivationHotkeyAsync);
-        _hotKeyService.RegisterHotkey(CancelHotkey, HandleCancelHotkeyAsync);
+        try
+        {
+            // API Key check
+            if (_chatModelProvider.Get(SelectedProfile.ChatModelId) is OpenAiCompatibleChatModel ocm && ocm.RequireApiKey)
+            {
+                if (_apiKeyRepository.Get(ocm.ApiSource.ApiSource) == null)
+                {
+                    throw new InvalidOperationException($"{ocm.ApiSource} API Key not found");
+                }
+            }
+            if (_transcriptionModelProvider.Get(SelectedProfile.TranscriptionModelId) is OpenAiCompatibleTranscribeModel otm && otm.RequireApiKey)
+            {
+                if (_apiKeyRepository.Get(otm.ApiSource.ApiSource) == null)
+                {
+                    throw new InvalidOperationException($"{otm.ApiSource} API Key not found");
+                }
+            }
 
-        // Window control
-        _windowService.SetTopmost(true);
+            // Register hotkeys
+            _hotKeyService.UnregisterAllHotkeys();
+            var activationHotkey = _hotkeyRepository.Get(HotkeyPurpose.Activation);
+            _hotKeyService.RegisterHotkey(activationHotkey, HandleActivationHotkeyAsync);
+            _hotKeyService.RegisterHotkey(CancelHotkey, HandleCancelHotkeyAsync);
 
-        // Start recording
-        _audioService.StartRecording(NotifyRecordingTimeout);
-        ResetRecordingState();
+            // Window control
+            _windowService.SetTopmost(true);
+
+            // Start recording
+            _audioService.StartRecording(NotifyRecordingTimeout);
+            ResetRecordingState();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+            System.Windows.MessageBox.Show(ex.Message, "Noto note", MessageBoxButton.OK, MessageBoxImage.Error);
+            _stateMachine.Fire(Trigger.Cancel);
+        }
     }
 
     private async Task OnExitRecordingAsync()
@@ -219,7 +249,7 @@ public partial class MainScreenViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, "Noto note");
+            System.Windows.MessageBox.Show(ex.Message, "Noto note");
         }
         _stateMachine.Fire(Trigger.CompletedProcessing);
     }
@@ -228,7 +258,9 @@ public partial class MainScreenViewModel : ObservableObject
     {
         Debug.WriteLine("[Processing] Stop.");
 
+        // hotkey
         _hotKeyService.UnregisterAllHotkeys();
+
         _processingCtx?.Cancel();
         _processingCtx?.Dispose();
     }

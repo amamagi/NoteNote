@@ -19,8 +19,8 @@ public sealed class HotkeyRepository : IHotkeyRepository
             _collection.Insert(new HotkeyDto()
             {
                 Id = activateId,
-                Key = Keys.Space,
-                Modifiers = Keys.Shift | Keys.Control
+                Key = Keys.S,
+                Modifiers = Keys.Alt | Keys.Control
             });
         }
         var toggleProfileId = (int)HotkeyPurpose.ToggleProfile;
@@ -29,8 +29,8 @@ public sealed class HotkeyRepository : IHotkeyRepository
             _collection.Insert(new HotkeyDto()
             {
                 Id = toggleProfileId,
-                Key = Keys.S,
-                Modifiers = Keys.Shift | Keys.Control
+                Key = Keys.D,
+                Modifiers = Keys.Alt | Keys.Control
             });
         }
     }

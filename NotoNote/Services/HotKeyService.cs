@@ -1,5 +1,6 @@
 ﻿using NotoNote.Models;
 using Open.WinKeyboardHook;
+using System.Diagnostics;
 using System.Windows.Threading;
 
 namespace NotoNote.Services;
@@ -27,15 +28,21 @@ public sealed class HotkeyService : IHotkeyService, IDisposable
     {
         _hotkeyCallbacks[hotkey] = callback;
     }
+    public void RegisterHotkey(Hotkey hotkey, Func<Task> callback)
+    {
+        _hotkeyAsyncCallbacks[hotkey] = callback;
+    }
 
     public void UnregisterHotkey(Hotkey hotkey)
     {
         _hotkeyCallbacks.Remove(hotkey);
+        _hotkeyAsyncCallbacks.Remove(hotkey);
     }
 
     public void UnregisterAllHotkeys()
     {
         _hotkeyCallbacks.Clear();
+        _hotkeyAsyncCallbacks.Clear();
     }
 
     private void InterceptorOnKeyDown(object? sender, KeyEventArgs args)
@@ -43,14 +50,15 @@ public sealed class HotkeyService : IHotkeyService, IDisposable
         var keys = args.KeyCode & ~Keys.Modifiers;
         var modifiers = args.Modifiers;
         var hotkey = new Hotkey(keys, modifiers);
-        var handled = InvokeCallbacks(hotkey, _hotkeyCallbacks);
+        var handled = InvokeCallbacks(hotkey);
         if (handled) args.SuppressKeyPress = true;
+        Debug.WriteLine($"Hotkey {hotkey} pressed. Handled: {handled}");
     }
 
-    private bool InvokeCallbacks(Hotkey hotkey, Dictionary<Hotkey, Action> callbacks)
+    private bool InvokeCallbacks(Hotkey hotkey)
     {
         bool handled = false;
-        foreach (var callback in callbacks)
+        foreach (var callback in _hotkeyCallbacks)
         {
             if (callback.Key == hotkey)
             {
@@ -69,9 +77,5 @@ public sealed class HotkeyService : IHotkeyService, IDisposable
         return handled;
     }
 
-    public void RegisterHotkey(Hotkey hotkey, Func<Task> callback)
-    {
-        _hotkeyAsyncCallbacks[hotkey] = callback;
-    }
 }
 
