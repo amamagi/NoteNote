@@ -7,7 +7,7 @@ namespace NotoNote.DataStore;
 public sealed class ApiKeyRepository : IApiKeyRepository
 {
     private readonly ILiteCollection<ApiKeyDto> _collection;
-    private readonly Dictionary<ApiSource, ApiKey> _apiKeysFromOption = new();
+    private readonly Dictionary<ApiSource, ApiKey> _presetApiKeys = new();
 
     public ApiKeyRepository(ILiteDbContext context, IOptions<List<OpenAiCompatibleApiOptions>> options)
     {
@@ -21,7 +21,7 @@ public sealed class ApiKeyRepository : IApiKeyRepository
             }
             var source = new ApiSource(option.Name);
             var apiKey = new ApiKey(source, option.ApiKey);
-            _apiKeysFromOption[source] = apiKey;
+            _presetApiKeys[source] = apiKey;
         }
     }
 
@@ -31,15 +31,16 @@ public sealed class ApiKeyRepository : IApiKeyRepository
         _collection.Delete(bsonId);
     }
 
-    public ApiKey? Get(ApiSource source)
+    public ApiKey? Get(ApiSource apiSource)
+    {
+        return GetFromSaveData(apiSource) ?? GetFromPreset(apiSource);
+    }
+
+    public ApiKey? GetFromSaveData(ApiSource source)
     {
         var dto = _collection.FindById(source.ToString());
         if (dto == null)
         {
-            if (_apiKeysFromOption.TryGetValue(source, out var apiKey))
-            {
-                return apiKey;
-            }
             // No record found, return null
             return null;
         }
@@ -52,6 +53,15 @@ public sealed class ApiKeyRepository : IApiKeyRepository
         return dto.ToModel();
     }
 
+    public ApiKey? GetFromPreset(ApiSource source)
+    {
+        if (_presetApiKeys.TryGetValue(source, out var apiKey))
+        {
+            return apiKey;
+        }
+        return null;
+    }
+
     public void Set(ApiKey apiKey)
     {
         _collection.Insert(apiKey.ToDto());
@@ -59,7 +69,7 @@ public sealed class ApiKeyRepository : IApiKeyRepository
 
     public void AddOrUpdate(ApiKey apiKey)
     {
-        var existing = Get(apiKey.Source);
+        var existing = GetFromSaveData(apiKey.Source);
         if (existing == null)
         {
             Set(apiKey);

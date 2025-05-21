@@ -14,12 +14,15 @@ public class ModelApiCollector : ITranscriptionModelProvider, IChatModelProvider
             var source = new ApiSourceWithUrl(new(option.Name), new(option.BaseUrl));
             var sourceId = option.Name.ToLower();
 
+            // 未定義のAPIソースについてはAPIキーはOptionとする
+            bool requireApiKey = source.ApiSource == ApiSource.OpenAI || source.ApiSource == ApiSource.Gemini || source.ApiSource == ApiSource.Anthropic;
+
             foreach (var model in option.TranscriptionModels)
             {
                 var id = new TranscriptionModelId($"{sourceId}-{model.ApiId}");
                 var name = new ModelName(model.Name);
                 var apiId = new ApiModelId(model.ApiId);
-                var transcriptionModel = new OpenAiCompatibleTranscribeModel(id, name, source, apiId);
+                var transcriptionModel = new OpenAiCompatibleTranscribeModel(id, name, source, apiId, requireApiKey);
                 if (_transcriptionModels.ContainsKey(id))
                 {
                     MessageBox.Show($"Duplicate transcription model ID found: {id}. This will be ignored.");
@@ -32,7 +35,7 @@ public class ModelApiCollector : ITranscriptionModelProvider, IChatModelProvider
                 var id = new ChatModelId($"{sourceId}-{model.ApiId}");
                 var name = new ModelName(model.Name);
                 var apiId = new ApiModelId(model.ApiId);
-                var chatModel = new OpenAiCompatibleChatModel(id, name, source, apiId);
+                var chatModel = new OpenAiCompatibleChatModel(id, name, source, apiId, requireApiKey);
                 if (_chatModels.ContainsKey(id))
                 {
                     MessageBox.Show($"Duplicate chat model ID found: {id}. This will be ignored.");
@@ -41,7 +44,6 @@ public class ModelApiCollector : ITranscriptionModelProvider, IChatModelProvider
                 _chatModels[id] = chatModel;
             }
         }
-
     }
 
     public ITranscriptionModel? Get(TranscriptionModelId id)
