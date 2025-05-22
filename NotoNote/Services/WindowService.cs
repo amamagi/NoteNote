@@ -6,7 +6,8 @@ public sealed class WindowService : IWindowService
     public void Activate()
     {
         var w = System.Windows.Application.Current.MainWindow;
-        w.Activate();
+        w.Topmost = true;
+        w.Topmost = false;
     }
 
     public void SetTopmost(bool topmost)
