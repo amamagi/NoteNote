@@ -7,7 +7,7 @@
     xmlns:vm="clr-namespace:NotoNote.ViewModels"
     xmlns:view="clr-namespace:NotoNote.Views"
     mc:Ignorable="d"
-    Title="Noto note"
+    Title="NotoNote"
     SizeToContent="WidthAndHeight"
     ResizeMode="NoResize">
     <ContentPresenter x:Name="MainContent"/>
