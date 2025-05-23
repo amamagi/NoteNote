@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:NotoNote.Views"
              xmlns:viewmodels="clr-namespace:NotoNote.ViewModels" 
+             xmlns:utils="clr-namespace:NotoNote.Utilities"
              d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
              mc:Ignorable="d"
              Width="600"
@@ -21,9 +22,13 @@
                         <!-- API KEY -->
                         <TextBlock Text="API Key" FontWeight="Bold" TextWrapping="WrapWithOverflow"/>
                         <TextBlock Text="OpenAI API Key" TextWrapping="WrapWithOverflow" Margin="0,4,0,0"/>
-                        <TextBox Text="{Binding OpenAiApiKey}" Margin="0,4,0,0"/>
+                        <PasswordBox Margin="0,4,0,0"
+                                     utils:PasswordBoxHelper.Attachment="True"
+                                     utils:PasswordBoxHelper.Password="{Binding OpenAiApiKey, UpdateSourceTrigger=PropertyChanged}"/>
                         <TextBlock Text="Gemini API Key" TextWrapping="WrapWithOverflow" Margin="0,4,0,0"/>
-                        <TextBox Text="{Binding GeminiApiKey}" Margin="0,4,0,0"/>
+                        <PasswordBox Margin="0,4,0,0"
+                                     utils:PasswordBoxHelper.Attachment="True"
+                                     utils:PasswordBoxHelper.Password="{Binding GeminiApiKey, UpdateSourceTrigger=PropertyChanged}"/>
 
                         <!-- Hotkey -->
                         <TextBlock Text="Hotkey" FontWeight="Bold" FontSize="14" TextWrapping="WrapWithOverflow" Margin="0,8,0,0"/>

@@ -6,7 +6,10 @@ public sealed class PresetProfileProvider : IPresetProfileProvider
 {
     private readonly List<Profile> _profiles = [];
 
-    public PresetProfileProvider(IOptions<List<PresetProfileOptions>> options, IChatModelProvider chatModels, ITranscriptionModelProvider transcriptionModels)
+    public PresetProfileProvider(
+        IOptions<List<PresetProfileOptions>> options,
+        IChatModelProvider chatModels,
+        ITranscriptionModelProvider transcriptionModels)
     {
         var optionProfiles = options.Value;
         if (optionProfiles == null || optionProfiles.Count == 0)
