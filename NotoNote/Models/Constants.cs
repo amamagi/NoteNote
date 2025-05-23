@@ -2,6 +2,6 @@
 
 public static class Constants
 {
-    public static readonly TranscriptionModelId DefaultTranscriptionModelId = new("openai-whisper-1");
-    public static readonly ChatModelId DefaultChatModelId = new("openai-gpt-4o-mini");
+    public static readonly OpenAiCompatibleTranscriptionModel DefaultTranscriptionModelId = new(new("Whisper"), new("whisper-1"), ApiSource.OpenAI);
+    public static readonly OpenAiCompatibleChatModel DefaultChatModelId = new(new("ChatGPT-4o mini"), new("gpt-4o-mini"), ApiSource.OpenAI);
 }

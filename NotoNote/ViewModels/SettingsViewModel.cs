@@ -36,8 +36,8 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private ObservableCollection<Profile> _profiles;
 
     // TODO: ModelId -> ModelName  
-    public ITranscriptionModel[] AvailableTranscriptionAiModels { get; }
-    public IChatModel[] AvailableChatAiModels { get; }
+    public ITranscriptionModel[] AvailableTranscriptionModels { get; }
+    public IChatModel[] AvailableChatModels { get; }
 
     public string OpenAiApiKey
     {
@@ -80,40 +80,38 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    public ITranscriptionModel SelectedTranscriptionAiModel
+    public ITranscriptionModel SelectedTranscriptionModel
     {
         get
         {
             if (SelectedProfile != null && SelectedProfile.TranscriptionModelId != null)
             {
-                var selected = _transcriptionModelProvider.Get(SelectedProfile.TranscriptionModelId);
-                if (selected != null) return selected;
+                return SelectedProfile.TranscriptionModelId;
             }
             return _transcriptionModelProvider.GetAll().First();
         }
         set
         {
             if (SelectedProfile == null) return;
-            var newProfile = SelectedProfile with { TranscriptionModelId = value.Id };
+            var newProfile = SelectedProfile with { TranscriptionModelId = value };
             UpdateProfiles(newProfile);
         }
     }
 
-    public IChatModel SelectedChatAiModel
+    public IChatModel SelectedChatModel
     {
         get
         {
             if (SelectedProfile != null && SelectedProfile.ChatModelId != null)
             {
-                var selected = _chatModelProvider.Get(SelectedProfile.ChatModelId);
-                if (selected != null) return selected;
+                return SelectedProfile.ChatModelId;
             }
             return _chatModelProvider.GetAll().First();
         }
         set
         {
             if (SelectedProfile == null) return;
-            var newProfile = SelectedProfile with { ChatModelId = value.Id };
+            var newProfile = SelectedProfile with { ChatModelId = value };
             UpdateProfiles(newProfile);
         }
     }
@@ -131,8 +129,8 @@ public partial class SettingsViewModel : ObservableObject
         _transcriptionModelProvider = transcriptionModelProvider;
         _chatModelProvider = chatModelProvider;
 
-        AvailableTranscriptionAiModels = transcriptionModelProvider.GetAll().ToArray();
-        AvailableChatAiModels = chatModelProvider.GetAll().ToArray();
+        AvailableTranscriptionModels = transcriptionModelProvider.GetAll().ToArray();
+        AvailableChatModels = chatModelProvider.GetAll().ToArray();
 
         // Profile
         var activeId = _profilesRepository.GetActiveProfileId();
@@ -177,8 +175,8 @@ public partial class SettingsViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(SelectedProfileName));
         OnPropertyChanged(nameof(SelectedProfileSystemPrompt));
-        OnPropertyChanged(nameof(SelectedTranscriptionAiModel));
-        OnPropertyChanged(nameof(SelectedChatAiModel));
+        OnPropertyChanged(nameof(SelectedTranscriptionModel));
+        OnPropertyChanged(nameof(SelectedChatModel));
     }
 
     [RelayCommand]

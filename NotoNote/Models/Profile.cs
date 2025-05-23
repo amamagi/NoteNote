@@ -4,14 +4,14 @@ public record Profile(
     ProfileId Id,
     ProfileName Name,
     SystemPrompt SystemPrompt,
-    TranscriptionModelId TranscriptionModelId,
-    ChatModelId ChatModelId) : RecordWithValidation
+    ITranscriptionModel TranscriptionModelId,
+    IChatModel ChatModelId) : RecordWithValidation
 {
     public Profile(
         ProfileName name,
         SystemPrompt systemPrompt,
-        TranscriptionModelId transcriptionModel,
-        ChatModelId chatModel) : this(
+        ITranscriptionModel transcriptionModel,
+        IChatModel chatModel) : this(
             new(Guid.NewGuid()),
             name,
             systemPrompt,

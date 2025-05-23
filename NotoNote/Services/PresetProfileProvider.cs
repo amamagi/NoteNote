@@ -6,13 +6,16 @@ public sealed class PresetProfileProvider : IPresetProfileProvider
 {
     private readonly List<Profile> _profiles = [];
 
-    public PresetProfileProvider(IOptions<List<PresetProfileOptions>> options)
+    public PresetProfileProvider(IOptions<List<PresetProfileOptions>> options, IChatModelProvider chatModels, ITranscriptionModelProvider transcriptionModels)
     {
         var optionProfiles = options.Value;
         if (optionProfiles == null || optionProfiles.Count == 0)
         {
             throw new ArgumentException("No profiles found in configuration.");
         }
+
+        var defaultTranscriptionModel = transcriptionModels.GetAll().First();
+        var defaultChatModel = chatModels.GetAll().First();
 
         foreach (var optionProfile in optionProfiles)
         {
@@ -22,8 +25,8 @@ public sealed class PresetProfileProvider : IPresetProfileProvider
                 new ProfileId(Guid.Parse(optionProfile.Id)), // TODO: Use option value
                 new ProfileName(profileName),
                 new SystemPrompt(systemPrompt),
-                Constants.DefaultTranscriptionModelId,
-                Constants.DefaultChatModelId);
+                defaultTranscriptionModel,
+                defaultChatModel);
             _profiles.Add(profile);
         }
     }

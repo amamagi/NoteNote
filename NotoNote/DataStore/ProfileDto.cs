@@ -8,8 +8,8 @@ public sealed class ProfileDto
     public Guid Id { get; init; }
     public string Name { get; set; } = string.Empty;
     public string SystemPrompt { get; set; } = string.Empty;
-    public string TranscriptionAiModelId { get; set; } = string.Empty;
-    public string ChatModelId { get; set; } = string.Empty;
+    public ITranscriptionModel TranscriptionModelId { get; set; } = Constants.DefaultTranscriptionModelId;
+    public IChatModel ChatModelId { get; set; } = Constants.DefaultChatModelId;
     public Guid NextId { get; set; }
 }
 
@@ -21,8 +21,8 @@ public static class ProfileExtensions
             new ProfileId(dto.Id),
             new ProfileName(dto.Name),
             new SystemPrompt(dto.SystemPrompt),
-            new TranscriptionModelId(dto.TranscriptionAiModelId),
-            new ChatModelId(dto.ChatModelId));
+            dto.TranscriptionModelId,
+            dto.ChatModelId);
     }
     public static ProfileDto ToDto(this Profile model, Guid nextId)
     {
@@ -31,8 +31,8 @@ public static class ProfileExtensions
             Id = model.Id.Value,
             Name = model.Name.Value,
             SystemPrompt = model.SystemPrompt.Value,
-            TranscriptionAiModelId = model.TranscriptionModelId.Value,
-            ChatModelId = model.ChatModelId.Value,
+            TranscriptionModelId = model.TranscriptionModelId,
+            ChatModelId = model.ChatModelId,
             NextId = nextId
         };
     }

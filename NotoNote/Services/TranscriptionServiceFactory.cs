@@ -2,21 +2,20 @@
 
 namespace NotoNote.Services;
 
-public sealed class TranscriptionServiceFactory : ITranscriptionServiceFactory
+public sealed class TranscriptionServiceFactory(
+    IApiKeyRepository _apiKeyRepository,
+    IApiMetadataProvider _apiMetadataRepository) : ITranscriptionServiceFactory
 {
-    private readonly IApiKeyRepository _apiKeys;
-
-    public TranscriptionServiceFactory(IApiKeyRepository apiKeys) => _apiKeys = apiKeys;
-
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="ArgumentNullException"></exception>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     public ITranscriptionService Create(ITranscriptionModel model)
     {
-        if (model is OpenAiCompatibleTranscribeModel om)
+        if (model is OpenAiCompatibleTranscriptionModel om)
         {
-            var apiKey = _apiKeys.Get(om.ApiSource.ApiSource) ?? throw new ArgumentException($"{om.ApiSource} API Key not found");
-            return new OpenAiCompatibleTranscriptionService(apiKey, om.ApiSource.Uri, om.ApiId);
+            var metadata = _apiMetadataRepository.Get(om.ApiSource) ?? throw new ArgumentException($"{om.ApiSource} API metadata not found");
+            var apiKey = _apiKeyRepository.Get(om.ApiSource) ?? throw new ArgumentException($"{om.ApiSource} API Key not found");
+            return new OpenAiCompatibleTranscriptionService(apiKey, metadata.BaseUri, om.ApiId);
             // TODO: serviceはキャッシュした方がいいかも
         }
 

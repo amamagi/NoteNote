@@ -42,6 +42,7 @@ public partial class MainScreenViewModel : ObservableObject
     private readonly ITranscriptionModelProvider _transcriptionModelProvider;
     private readonly IChatModelProvider _chatModelProvider;
     private readonly IApiKeyRepository _apiKeyRepository;
+    private readonly IApiMetadataProvider _apiMetadataRepository;
 
     [ObservableProperty] private Profile _selectedProfile;
     [ObservableProperty] private ObservableCollection2<Profile> _profiles;
@@ -75,7 +76,8 @@ public partial class MainScreenViewModel : ObservableObject
         IHotkeyRepository hotkeyRepo,
         ITranscriptionModelProvider transcriptionModelProvider,
         IChatModelProvider chatModelProvider,
-        IApiKeyRepository apiKeyRepository)
+        IApiKeyRepository apiKeyRepository,
+        IApiMetadataProvider apiMetadataRepository)
     {
         // initialize fields
         _hotKeyService = hotKey;
@@ -89,6 +91,7 @@ public partial class MainScreenViewModel : ObservableObject
         _transcriptionModelProvider = transcriptionModelProvider;
         _chatModelProvider = chatModelProvider;
         _apiKeyRepository = apiKeyRepository;
+        _apiMetadataRepository = apiMetadataRepository;
 
         // Set profiles
         Profiles = new(_profilesRepository.GetAll());
@@ -165,16 +168,18 @@ public partial class MainScreenViewModel : ObservableObject
         try
         {
             // API Key check
-            if (_chatModelProvider.Get(SelectedProfile.ChatModelId) is OpenAiCompatibleChatModel ocm && ocm.RequireApiKey)
+            if (SelectedProfile.ChatModelId is OpenAiCompatibleChatModel ocm)
             {
-                if (_apiKeyRepository.Get(ocm.ApiSource.ApiSource) == null)
+                var requireApiKey = _apiMetadataRepository.Get(ocm.ApiSource).RequireApiKey;
+                if (requireApiKey && _apiKeyRepository.Get(ocm.ApiSource) == null)
                 {
                     throw new InvalidOperationException($"{ocm.ApiSource} API Key not found");
                 }
             }
-            if (_transcriptionModelProvider.Get(SelectedProfile.TranscriptionModelId) is OpenAiCompatibleTranscribeModel otm && otm.RequireApiKey)
+            if (SelectedProfile.TranscriptionModelId is OpenAiCompatibleTranscriptionModel otm)
             {
-                if (_apiKeyRepository.Get(otm.ApiSource.ApiSource) == null)
+                var requireApiKey = _apiMetadataRepository.Get(otm.ApiSource).RequireApiKey;
+                if (requireApiKey && _apiKeyRepository.Get(otm.ApiSource) == null)
                 {
                     throw new InvalidOperationException($"{otm.ApiSource} API Key not found");
                 }
@@ -223,12 +228,10 @@ public partial class MainScreenViewModel : ObservableObject
         var ct = _processingCtx.Token;
         try
         {
-            var transcriptionModel = _transcriptionModelProvider.Get(SelectedProfile.TranscriptionModelId) ?? throw new InvalidOperationException($"Transcription model not found: {SelectedProfile.TranscriptionModelId}");
-            var transcriptionService = _transcriptionServiceFactory.Create(transcriptionModel);
-            var chatModel = _chatModelProvider.Get(SelectedProfile.ChatModelId) ?? throw new InvalidOperationException($"Chat model not found: {SelectedProfile.ChatModelId}");
-            var chatService = _chatServiceFactory.Create(chatModel);
+            var transcriptionService = _transcriptionServiceFactory.Create(SelectedProfile.TranscriptionModelId);
+            var chatService = _chatServiceFactory.Create(SelectedProfile.ChatModelId);
 
-            Debug.WriteLine($"[Processing] TranscriptionModel: {transcriptionModel.DisplayName.Value}, ChatModel: {chatModel.DisplayName.Value}");
+            Debug.WriteLine($"[Processing] TranscriptionModel: {SelectedProfile.TranscriptionModelId.DisplayName.Value}, ChatModel: {SelectedProfile.ChatModelId.DisplayName.Value}");
 
             // transcriptTextをワイプしてない場合はTranscribeをスキップする。API費用節約と高速化のため。
             if (_transcriptText == null)

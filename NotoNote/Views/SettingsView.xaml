@@ -142,9 +142,9 @@
                                      TextWrapping="Wrap" AcceptsReturn="True"
                                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" />
                             <TextBlock Grid.Row="5" Text="Transcription Model"/>
-                            <ComboBox Grid.Row="6" ItemsSource="{Binding AvailableTranscriptionAiModels}" SelectedItem="{Binding SelectedTranscriptionAiModel}" DisplayMemberPath="DisplayName.Value"/>
+                            <ComboBox Grid.Row="6" ItemsSource="{Binding AvailableTranscriptionModels}" SelectedItem="{Binding SelectedTranscriptionModel}" DisplayMemberPath="DisplayName.Value"/>
                             <TextBlock Grid.Row="7" Text="Chat Model"/>
-                            <ComboBox Grid.Row="8" ItemsSource="{Binding AvailableChatAiModels}" SelectedItem="{Binding SelectedChatAiModel}" DisplayMemberPath="DisplayName.Value"/>
+                            <ComboBox Grid.Row="8" ItemsSource="{Binding AvailableChatModels}" SelectedItem="{Binding SelectedChatModel}" DisplayMemberPath="DisplayName.Value"/>
                         </Grid>
                     </ScrollViewer>
 

@@ -36,9 +36,10 @@ public partial class App : Application
                 services.AddSingleton<IHotkeyRepository, HotkeyRepository>();
 
                 // Services
-                services.AddSingleton<ModelApiCollector>();
-                services.AddSingleton<ITranscriptionModelProvider>(sp => sp.GetRequiredService<ModelApiCollector>());
-                services.AddSingleton<IChatModelProvider>(sp => sp.GetRequiredService<ModelApiCollector>());
+                services.AddSingleton<ModelCollector>();
+                services.AddSingleton<ITranscriptionModelProvider>(sp => sp.GetRequiredService<ModelCollector>());
+                services.AddSingleton<IChatModelProvider>(sp => sp.GetRequiredService<ModelCollector>());
+                services.AddSingleton<IApiMetadataProvider>(sp => sp.GetRequiredService<ModelCollector>());
                 services.AddSingleton<IWindowService, WindowService>();
                 services.AddSingleton<IHotkeyService, HotkeyService>((_) => new HotkeyService(Current.Dispatcher));
                 services.AddSingleton<IClipBoardService, ClipBoardService>((_) => new ClipBoardService(Current.Dispatcher));
