@@ -117,14 +117,14 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     public SettingsViewModel(
-        IProfileRepository profiles,
-        IApiKeyRepository apiKey,
+        IProfileRepository profileRepository,
+        IApiKeyRepository apiKeyRepository,
         IHotkeyRepository hotkeyRepository,
         ITranscriptionModelProvider transcriptionModelProvider,
         IChatModelProvider chatModelProvider)
     {
-        _profilesRepository = profiles;
-        _apiKeyRepository = apiKey;
+        _profilesRepository = profileRepository;
+        _apiKeyRepository = apiKeyRepository;
         _hotkeyRepository = hotkeyRepository;
         _transcriptionModelProvider = transcriptionModelProvider;
         _chatModelProvider = chatModelProvider;

@@ -39,8 +39,6 @@ public partial class MainScreenViewModel : ObservableObject
     private readonly IAudioService _audioService;
     private readonly ITranscriptionServiceFactory _transcriptionServiceFactory;
     private readonly IChatServiceFactory _chatServiceFactory;
-    private readonly ITranscriptionModelProvider _transcriptionModelProvider;
-    private readonly IChatModelProvider _chatModelProvider;
     private readonly IApiKeyRepository _apiKeyRepository;
     private readonly IApiMetadataProvider _apiMetadataRepository;
 
@@ -66,30 +64,26 @@ public partial class MainScreenViewModel : ObservableObject
     public bool HasProcessedText => !string.IsNullOrEmpty(ProcessedText);
 
     public MainScreenViewModel(
-        IHotkeyService hotKey,
-        IProfileRepository profiles,
-        IAudioService audio,
-        ITranscriptionServiceFactory transcription,
-        IChatServiceFactory chat,
-        IWindowService window,
-        IClipBoardService clipboard,
-        IHotkeyRepository hotkeyRepo,
-        ITranscriptionModelProvider transcriptionModelProvider,
-        IChatModelProvider chatModelProvider,
+        IHotkeyService hotKeyService,
+        IProfileRepository profileRepository,
+        IAudioService audioService,
+        ITranscriptionServiceFactory transcriptionServiceFactory,
+        IChatServiceFactory chatServiceFactory,
+        IWindowService windowService,
+        IClipBoardService clipboardService,
+        IHotkeyRepository hotkeyRepository,
         IApiKeyRepository apiKeyRepository,
         IApiMetadataProvider apiMetadataRepository)
     {
         // initialize fields
-        _hotKeyService = hotKey;
-        _profilesRepository = profiles;
-        _audioService = audio;
-        _transcriptionServiceFactory = transcription;
-        _chatServiceFactory = chat;
-        _windowService = window;
-        _clipboardService = clipboard;
-        _hotkeyRepository = hotkeyRepo;
-        _transcriptionModelProvider = transcriptionModelProvider;
-        _chatModelProvider = chatModelProvider;
+        _hotKeyService = hotKeyService;
+        _profilesRepository = profileRepository;
+        _audioService = audioService;
+        _transcriptionServiceFactory = transcriptionServiceFactory;
+        _chatServiceFactory = chatServiceFactory;
+        _windowService = windowService;
+        _clipboardService = clipboardService;
+        _hotkeyRepository = hotkeyRepository;
         _apiKeyRepository = apiKeyRepository;
         _apiMetadataRepository = apiMetadataRepository;
 
