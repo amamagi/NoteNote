@@ -16,7 +16,10 @@ public class PasswordBoxHelper : DependencyObject
             "Password",
             typeof(string),
             typeof(PasswordBoxHelper),
-            new FrameworkPropertyMetadata(default(string), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+            new FrameworkPropertyMetadata(
+                default(string),
+                FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+                PasswordProperty_Changed));
 
     public static bool GetAttachment(DependencyObject dp)
     {
@@ -52,5 +55,16 @@ public class PasswordBoxHelper : DependencyObject
     {
         var passwordBox = (PasswordBox)sender;
         SetPassword(passwordBox, passwordBox.Password);
+    }
+    private static void PasswordProperty_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is PasswordBox passwordBox)
+        {
+            // ループ防止
+            if (passwordBox.Password != (string)e.NewValue)
+            {
+                passwordBox.Password = (string)e.NewValue ?? "";
+            }
+        }
     }
 }
