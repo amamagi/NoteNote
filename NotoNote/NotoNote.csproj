@@ -13,14 +13,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Remove="icon.ico" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Include="icon.ico" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
 		<PackageReference Include="LiteDB" Version="5.0.21" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.4" />
@@ -35,13 +27,22 @@
 
 	<ItemGroup>
 		<Page Include="App.xaml" />
+		<Resource Include="icon.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Resource Include="icon.ico" />
-	</ItemGroup>
-	<ItemGroup>
 		<None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<TargetFIles Include="..\README.md" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="$(MSBuildThisFileDirectory)..\README.md">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<Link>README.md</Link>
+		</Content>
 	</ItemGroup>
 
 </Project>
