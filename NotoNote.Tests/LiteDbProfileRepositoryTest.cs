@@ -34,7 +34,7 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     public void Add_And_Get_Works()
     {
         // Arrange
-        var profile = new Profile(new("TestProfile"), new("TestSystemPrompt\n\n\na"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        var profile = new Profile(new("TestProfile"), new("TestSystemPrompt\n\n\na"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
         // Act
         _repository.AddOrUpdate(profile);
         var retrievedProfile = _repository.Get(profile.Id);
@@ -51,8 +51,8 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     public void GetAll_Returns_All_Profiles_In_Added_Order()
     {
         // Arrange
-        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
-        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
+        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
         _repository.AddOrUpdate(profile1);
         _repository.AddOrUpdate(profile2);
         // Act
@@ -67,7 +67,7 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     public void Update_And_Get_Works()
     {
         // Arrange
-        var profile = new Profile(new("TestProfile"), new("TestSystemPrompt\n\n\na"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        var profile = new Profile(new("TestProfile"), new("TestSystemPrompt\n\n\na"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
         _repository.AddOrUpdate(profile);
         profile = profile with { Name = new("UpdatedProfile") };
         // Act
@@ -82,7 +82,7 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     public void Delete_And_Get_Returns_Null()
     {
         // Arrange
-        var profile = new Profile(new("TestProfile"), new("TestSystemPrompt\n\n\na"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        var profile = new Profile(new("TestProfile"), new("TestSystemPrompt\n\n\na"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
         _repository.AddOrUpdate(profile);
         // Act
         _repository.Delete(profile.Id);
@@ -95,9 +95,9 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     public void Delete_Reconstruct_Linking()
     {
         // Arrange
-        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
-        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
-        var profile3 = new Profile(new("Profile3"), new("SystemPrompt3"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
+        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
+        var profile3 = new Profile(new("Profile3"), new("SystemPrompt3"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
         _repository.AddOrUpdate(profile1);
         _repository.AddOrUpdate(profile2);
         _repository.AddOrUpdate(profile3);
@@ -115,9 +115,9 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     public void Move_Index_Forward_Changes_Profile_Order()
     {
         // Arrange
-        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
-        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
-        var profile3 = new Profile(new("Profile3"), new("SystemPrompt3"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
+        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
+        var profile3 = new Profile(new("Profile3"), new("SystemPrompt3"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
         _repository.AddOrUpdate(profile1);
         _repository.AddOrUpdate(profile2);
         _repository.AddOrUpdate(profile3);
@@ -135,9 +135,9 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     public void Move_Index_Backward_Changes_Profile_Order()
     {
         // Arrange
-        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
-        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
-        var profile3 = new Profile(new("Profile3"), new("SystemPrompt3"), new("openai-whisper-1"), new("openai-gpt-4o-mini"));
+        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
+        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
+        var profile3 = new Profile(new("Profile3"), new("SystemPrompt3"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
         _repository.AddOrUpdate(profile1);
         _repository.AddOrUpdate(profile2);
         _repository.AddOrUpdate(profile3);
