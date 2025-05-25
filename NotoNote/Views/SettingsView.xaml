@@ -25,10 +25,12 @@
                         <PasswordBox Margin="0,4,0,0"
                                      utils:PasswordBoxHelper.Attachment="True"
                                      utils:PasswordBoxHelper.Password="{Binding OpenAiApiKey, UpdateSourceTrigger=PropertyChanged}"/>
+                        <!--
                         <TextBlock Text="Gemini API Key" TextWrapping="WrapWithOverflow" Margin="0,4,0,0"/>
                         <PasswordBox Margin="0,4,0,0"
                                      utils:PasswordBoxHelper.Attachment="True"
                                      utils:PasswordBoxHelper.Password="{Binding GeminiApiKey, UpdateSourceTrigger=PropertyChanged}"/>
+                        -->
 
                         <!-- Hotkey -->
                         <TextBlock Text="Hotkey" FontWeight="Bold" FontSize="14" TextWrapping="WrapWithOverflow" Margin="0,8,0,0"/>

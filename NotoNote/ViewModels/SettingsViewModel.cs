@@ -48,15 +48,16 @@ public partial class SettingsViewModel : ObservableObject
             else _apiKeyRepository.AddOrUpdate(new ApiKey(ApiSource.OpenAI, value));
         }
     }
-    public string GeminiApiKey
-    {
-        get => _apiKeyRepository.GetFromSaveData(ApiSource.Gemini)?.Value ?? string.Empty;
-        set
-        {
-            if (string.IsNullOrEmpty(value)) _apiKeyRepository.Delete(ApiSource.Gemini);
-            else _apiKeyRepository.AddOrUpdate(new ApiKey(ApiSource.Gemini, value));
-        }
-    }
+
+    //public string GeminiApiKey
+    //{
+    //    get => _apiKeyRepository.GetFromSaveData(ApiSource.Gemini)?.Value ?? string.Empty;
+    //    set
+    //    {
+    //        if (string.IsNullOrEmpty(value)) _apiKeyRepository.Delete(ApiSource.Gemini);
+    //        else _apiKeyRepository.AddOrUpdate(new ApiKey(ApiSource.Gemini, value));
+    //    }
+    //}
 
     public string SelectedProfileName
     {
