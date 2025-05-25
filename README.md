@@ -18,7 +18,7 @@ Noto Noteは、マイクからの音声を書き起こし、コンテキスト�
 ## Download
 
 リリースページから最新版のzipファイルをダウンロードしてください。  
-[Releases](https://github.com/yourusername/NotoNote/releases)
+[Releases](https://github.com/amamagi/NotoNote/releases)
 
 ## Prerequisites
 このアプリを使用するには、有効なクレジットのある **OpenAI API Key** が必要です  
