@@ -57,7 +57,19 @@ public sealed class PresetProfileProvider : IPresetProfileProvider
 ---
 """
             )
-        )
+        ),
+        (
+            new(Guid.Parse("e3f4a5b6-7c8d-9e0f-1a2b-3c4d5e6f7g8h")),
+            new("英訳"),
+            new(
+"""
+あなたは音声の書き起こしを英語に翻訳するアシスタントです。以下のルールに従って書き起こしを整形してください。
+- 不要な省略やスラングは避け、分かりやすい言葉に置き換えること。
+- 原文の意味やニュアンスは忠実に保持すること。
+---
+"""
+
+        ))
     ];
 
     private readonly List<Profile> _profiles = [];
