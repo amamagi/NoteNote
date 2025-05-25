@@ -35,15 +35,15 @@ public sealed class AudioService : IAudioService
         StartTimeoutTimer(timeoutCallback);
     }
 
-    public Task<WaveFilePath> StopRecordingAsync()
+    public Task<WaveFilePath?> StopRecordingAsync()
     {
-        StopTimeoutTimer();
         if (_waveIn == null)
         {
             Debug.WriteLine("WaveIn is null, cannot stop recording.");
-            return Task.FromResult(new WaveFilePath(FilePath));
+            return Task.FromResult<WaveFilePath?>(null);
         }
 
+        StopTimeoutTimer();
         var tcs = new TaskCompletionSource<WaveFilePath>();
 
         _waveIn.RecordingStopped += (_, _) =>
