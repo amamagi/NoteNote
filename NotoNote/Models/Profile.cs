@@ -1,4 +1,6 @@
-﻿namespace NotoNote.Models;
+﻿using NotoNote.Services;
+
+namespace NotoNote.Models;
 
 public record Profile(
     ProfileId Id,
@@ -22,8 +24,8 @@ public record Profile(
     public static Profile Default => new Profile(
         new("New Profile"),
         new("あなたは音声の書き起こしを整形するアシスタントです。以下のルールに従って書き起こしを整形してください。\n- \n---"),
-        Constants.DefaultTranscriptionModelId,
-        Constants.DefaultChatModelId);
+        PresetModelProvider.DefaultTranscriptionModel,
+        PresetModelProvider.DefaultChatModel);
 }
 
 public record ProfileId(Guid Value) : RecordWithValidation

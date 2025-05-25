@@ -68,7 +68,6 @@ public class ModelCollector : ITranscriptionModelProvider, IChatModelProvider, I
 
     public ApiMetadata Get(ApiSource source) => _apiMetadates[source];
 
-    public IEnumerable<ITranscriptionModel> GetAll() => _transcriptionModels;
-
+    IEnumerable<ITranscriptionModel> ITranscriptionModelProvider.GetAll() => _transcriptionModels;
     IEnumerable<IChatModel> IChatModelProvider.GetAll() => _chatModels;
 }

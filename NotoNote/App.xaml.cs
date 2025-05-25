@@ -25,13 +25,12 @@ public partial class App : Application
         _host = Host.CreateDefaultBuilder()
             .ConfigureServices((ctx, services) =>
             {
-                services.Configure<List<PresetProfileOptions>>(ctx.Configuration.GetSection("PresetProfiles"));
                 services.Configure<List<OpenAiCompatibleApiOptions>>(ctx.Configuration.GetSection("OpenAiCompatibleApi"));
 
                 // DataStore
+                services.AddSingleton<IPresetProfileProvider, PresetProfileProvider>();
                 services.AddSingleton<ILiteDbContext, LiteDbContext>();
                 services.AddSingleton<IApiKeyRepository, ApiKeyRepository>();
-                services.AddSingleton<IPresetProfileProvider, PresetProfileProvider>();
                 services.AddSingleton<IProfileRepository, ProfileRepository>();
                 services.AddSingleton<IHotkeyRepository, HotkeyRepository>();
 

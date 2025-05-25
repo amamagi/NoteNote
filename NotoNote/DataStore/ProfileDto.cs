@@ -1,5 +1,6 @@
 ﻿using LiteDB;
 using NotoNote.Models;
+using NotoNote.Services;
 
 namespace NotoNote.DataStore;
 public sealed class ProfileDto
@@ -8,8 +9,8 @@ public sealed class ProfileDto
     public Guid Id { get; init; }
     public string Name { get; set; } = string.Empty;
     public string SystemPrompt { get; set; } = string.Empty;
-    public ITranscriptionModel TranscriptionModelId { get; set; } = Constants.DefaultTranscriptionModelId;
-    public IChatModel ChatModelId { get; set; } = Constants.DefaultChatModelId;
+    public ITranscriptionModel TranscriptionModelId { get; set; } = PresetModelProvider.DefaultTranscriptionModel;
+    public IChatModel ChatModelId { get; set; } = PresetModelProvider.DefaultChatModel;
     public Guid NextId { get; set; }
 }
 

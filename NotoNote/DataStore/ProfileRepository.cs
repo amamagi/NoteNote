@@ -30,12 +30,10 @@ public sealed class ProfileRepository : IProfileRepository
         // Seed if empty
         if (_profiles.Count() == 0)
         {
-            var rawPresets = presetProfileProvider.Get();
-            var presets = rawPresets.DistinctBy(x => x.Id).ToList(); // Remove duplicates
-
-            if (presets.Count() == 0)
+            var presets = presetProfileProvider.Get();
+            if (presets.Count == 0)
             {
-                presets.Add(Profile.Default);
+                throw new ArgumentException("No preset profiles found.");
             }
 
             // Set head id

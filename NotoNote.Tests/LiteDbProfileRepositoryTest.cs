@@ -6,6 +6,8 @@ using NotoNote.Services;
 namespace NotoNote.Tests;
 public sealed class LiteDbProfileRepositoryTest : IDisposable
 {
+    private readonly ITranscriptionModel _defaultTranscriptionModel;
+    private readonly IChatModel _defaultChatModel;
     private readonly string _tempDbPath;
     private readonly ProfileRepository _repository;
     private readonly ILiteDbContext _context;
@@ -15,9 +17,9 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
         // Create a temporary database path
         _tempDbPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".db");
         _context = new LiteDbContext(_tempDbPath);
-        var presets = new Mock<IPresetProfileProvider>();
-        presets.Setup(x => x.Get()).Returns([]);
-        _repository = new ProfileRepository(presets.Object, _context);
+        _repository = new ProfileRepository(new PresetProfileProvider(), _context);
+        _defaultTranscriptionModel = PresetModelProvider.DefaultTranscriptionModel;
+        _defaultChatModel = PresetModelProvider.DefaultChatModel;
     }
 
     public void Dispose()
@@ -34,7 +36,7 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     public void Add_And_Get_Works()
     {
         // Arrange
-        var profile = new Profile(new("TestProfile"), new("TestSystemPrompt\n\n\na"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
+        var profile = new Profile(new("TestProfile"), new("TestSystemPrompt\n\n\na"), _defaultTranscriptionModel, _defaultChatModel);
         // Act
         _repository.AddOrUpdate(profile);
         var retrievedProfile = _repository.Get(profile.Id);
@@ -51,8 +53,8 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     public void GetAll_Returns_All_Profiles_In_Added_Order()
     {
         // Arrange
-        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
-        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
+        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), _defaultTranscriptionModel, _defaultChatModel);
+        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), _defaultTranscriptionModel, _defaultChatModel);
         _repository.AddOrUpdate(profile1);
         _repository.AddOrUpdate(profile2);
         // Act
@@ -67,7 +69,7 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     public void Update_And_Get_Works()
     {
         // Arrange
-        var profile = new Profile(new("TestProfile"), new("TestSystemPrompt\n\n\na"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
+        var profile = new Profile(new("TestProfile"), new("TestSystemPrompt\n\n\na"), _defaultTranscriptionModel, _defaultChatModel);
         _repository.AddOrUpdate(profile);
         profile = profile with { Name = new("UpdatedProfile") };
         // Act
@@ -82,7 +84,7 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     public void Delete_And_Get_Returns_Null()
     {
         // Arrange
-        var profile = new Profile(new("TestProfile"), new("TestSystemPrompt\n\n\na"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
+        var profile = new Profile(new("TestProfile"), new("TestSystemPrompt\n\n\na"), _defaultTranscriptionModel, _defaultChatModel);
         _repository.AddOrUpdate(profile);
         // Act
         _repository.Delete(profile.Id);
@@ -95,9 +97,9 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     public void Delete_Reconstruct_Linking()
     {
         // Arrange
-        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
-        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
-        var profile3 = new Profile(new("Profile3"), new("SystemPrompt3"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
+        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), _defaultTranscriptionModel, _defaultChatModel);
+        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), _defaultTranscriptionModel, _defaultChatModel);
+        var profile3 = new Profile(new("Profile3"), new("SystemPrompt3"), _defaultTranscriptionModel, _defaultChatModel);
         _repository.AddOrUpdate(profile1);
         _repository.AddOrUpdate(profile2);
         _repository.AddOrUpdate(profile3);
@@ -115,9 +117,9 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     public void Move_Index_Forward_Changes_Profile_Order()
     {
         // Arrange
-        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
-        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
-        var profile3 = new Profile(new("Profile3"), new("SystemPrompt3"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
+        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), _defaultTranscriptionModel, _defaultChatModel);
+        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), _defaultTranscriptionModel, _defaultChatModel);
+        var profile3 = new Profile(new("Profile3"), new("SystemPrompt3"), _defaultTranscriptionModel, _defaultChatModel);
         _repository.AddOrUpdate(profile1);
         _repository.AddOrUpdate(profile2);
         _repository.AddOrUpdate(profile3);
@@ -135,9 +137,9 @@ public sealed class LiteDbProfileRepositoryTest : IDisposable
     public void Move_Index_Backward_Changes_Profile_Order()
     {
         // Arrange
-        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
-        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
-        var profile3 = new Profile(new("Profile3"), new("SystemPrompt3"), Constants.DefaultTranscriptionModelId, Constants.DefaultChatModelId);
+        var profile1 = new Profile(new("Profile1"), new("SystemPrompt1"), _defaultTranscriptionModel, _defaultChatModel);
+        var profile2 = new Profile(new("Profile2"), new("SystemPrompt2"), _defaultTranscriptionModel, _defaultChatModel);
+        var profile3 = new Profile(new("Profile3"), new("SystemPrompt3"), _defaultTranscriptionModel, _defaultChatModel);
         _repository.AddOrUpdate(profile1);
         _repository.AddOrUpdate(profile2);
         _repository.AddOrUpdate(profile3);
