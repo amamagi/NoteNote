@@ -36,7 +36,12 @@ Noto Noteは、マイクからの音声を書き起こし、コンテキスト�
 - 録音や整形処理はEscキーでキャンセルできます。
 - 録音した音声は別のプロファイルに切り替えて `Regenerate` を実行することで再処理できます。
 
-## 依存ライブラリのライセンス表記
+
+## LICENSE
+This project is licensed under the MIT License, see the LICENSE.txt file for details
+
+
+## LICENSES (Dependencies)
 
 OpenAI .NET API library
 
