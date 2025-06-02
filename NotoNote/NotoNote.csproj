@@ -10,7 +10,7 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<UserSecretsId>7b93418a-f738-45bc-ae3c-9840eea223f4</UserSecretsId>
 		<ApplicationIcon>icon.ico</ApplicationIcon>
-		<VersionPrefix>1.0.0</VersionPrefix>
+		<VersionPrefix>1.0.1</VersionPrefix>
 	</PropertyGroup>
 
 	<ItemGroup>
