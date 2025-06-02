@@ -17,12 +17,16 @@ Noto Noteは、マイクからの音声を書き起こし、コンテキスト�
 
 ## Download
 
-リリースページから最新版のzipファイルをダウンロードしてください。  
-[Releases](https://github.com/amamagi/NotoNote/releases)
+[リリースページ](https://github.com/amamagi/NotoNote/releases)から最新版のzipファイルをダウンロードしてください。  
 
 ## Prerequisites
-このアプリを使用するには、有効なクレジットのある **OpenAI API Key** が必要です  
+### 1. OpenAI API Key
+このアプリを使用するには、有効なクレジットのある **OpenAI API Key** が必要です。\
 もしOpenAI API Keyを持っていない場合は、[OpenAI公式サイト](https://platform.openai.com/account/api-keys)から作成できます。
+
+### 2. .NET8.0 Runtime
+このアプリを使用するには、**.NET8.0 Runtime** のインストールが必要です。\
+もしインストールされていない場合は、[Microsoftの公式ページ](https://dotnet.microsoft.com/ja-jp/download/dotnet/8.0/runtime)からx64向けインストーラーをダウンロードし、インストールしてください。
 
 ## Usage
 1. 設定画面でAPI Keyを設定します
