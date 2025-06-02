@@ -59,7 +59,7 @@ public sealed class PresetProfileProvider : IPresetProfileProvider
             )
         ),
         (
-            new(Guid.Parse("e3f4a5b6-7c8d-9e0f-1a2b-3c4d5e6f7g8h")),
+            new(Guid.Parse("044badc8-724b-4ca7-a890-a2e23b9c3412")),
             new("英訳"),
             new(
 """
